@@ -87,6 +87,7 @@ export const appConfig = {
    * Constantes de configuration spécifiques de l'application
    *****************************************************************************/
   // foo: '1'
+  SYNCINCRNBD: 90, // nombre de jours de validité des synchros incrémentales
 
 }
 

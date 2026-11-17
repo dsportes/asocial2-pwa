@@ -1,0 +1,881 @@
+/* Module de gestion de "dsStores" de stockage BRUT de $Document.
+UN "store" par couple (svc, org)
+Stockage par clazz / pk : quand une classe n'a pas de document elle n'apparaît pas.
+
+Voir: https://alexop.dev/tils/dynamic-pinia-dsStores/
+*/
+
+import { type Ref, ref, reactive } from 'vue'
+import { defineStore } from 'pinia'
+import { encode, decode } from '@msgpack/msgpack'
+
+import { appConfig } from '../app/config'
+import stores from '../starter/allstores'
+import { useSessionStore } from '../stores/session-store'
+
+import { keyFromB64 } from '../starter/util'
+import { $Perimeter, $Def, FW$Sync, $SubsGenerator } from '../src-fw/subscription'
+import { $Document, Registry } from '../src-fw/registry'
+import { logexc } from '../src-fw/base'
+import { idb } from '../src-fw/idb'
+
+let _session: any = null
+const session = () => {
+  if (!_session) _session = useSessionStore()
+  return _session
+}
+
+// Si IDB a une lat plus ancienne il faut rafraîchir sa lat
+const MAXLATDELAY = 3 * 3600 * 1000
+
+type MsgNotif = {
+  svc: string
+  org: string // 'demo'
+  now: number // dh de l'opération ayant publié le message
+  hbc: string
+  title: string // 'myApp - demo',
+  body: string // 'Chat reçu',
+  url: string // 'http...'
+  defs: string // liste de def séparés par un espace
+}
+
+/* Traitement des notifications reçues:
+- sur retour d'opération,
+- sur web-push,
+*/
+export async function onPushMsg (payload: string) {
+  const messageNotif =  decode(keyFromB64(payload)) as MsgNotif
+  const st = stores.getDocStore(messageNotif.svc, messageNotif.org, true)
+  if (session().syncOK && st && messageNotif.defs && messageNotif.defs.length) {
+    const definitions: string[] = messageNotif.defs.split(' ')
+    const defs: $Def[] = []
+    for(const d of definitions) {
+      const def = new $Def(d)
+      if (def.isValid(messageNotif.svc)) defs.push(def)
+    }
+    if (defineStore.length)
+      await st.onNotif(defs, messageNotif.now, messageNotif.hbc)
+  }
+  if (messageNotif.body) {
+    const options = { body: messageNotif.body }
+    // @ts-expect-error
+    if (messageNotif.url) options.data = { url: messageNotif.url || appConfig.LOCATION }
+    const t = messageNotif.title || (appConfig.APPNAME + ' - ' + messageNotif.org)
+    await session().registration.showNotification(t, options)
+  }
+}
+
+export type IDocStore = {
+  readonly svc: string
+  readonly org: string
+  getXref (def: $Def) : Set<string>
+
+  fetch (lp: $Perimeter[], waiting?: boolean, force?: number) : Promise<void>
+  waitNextSync (p: $Perimeter) : Promise<void>
+  forcedResync (p?: $Perimeter) : void
+  getLastSyncTime (p: $Perimeter) : number
+  getApstate (pid: string) : APState
+  removeActiveP (id: string) : void
+
+  getItem (def: $Def, create?: boolean) : $DCItem
+  getDoc (cl: string, pk: string) : $Document
+  getSColl (cl: string, colName: string, pk: string) : Set<string>
+  getColl (cl: string, pk: string) : Set<string>
+  activePerimsIds () : Set<string>
+
+  onNotif (defs: $Def[], dh: number, hbc: string) : Promise<void>
+  storeDC (item: $DCItem, now: number, dcdata: $DCData) : Promise<void>
+  checkResolves () : void
+
+  manageHbc (hbcMode: number, hbc: string) : void
+}
+
+export type IDBrow = {
+  lat: number
+  v: number
+  data?: Uint8Array
+}
+
+export abstract class $DCItem {
+  /*
+   0: sync ni en queue, ni posté
+   1: sync en queue,
+   2: sync posté pas revenu,
+   3: posté, revenu
+   4: changement notifié, à resync
+  */
+  syncSt: number = 0
+  def: $Def
+  /* sat : service assert time. Le service affirme que le document / collection
+  avait bien cette valeur à la date-heure de l'opération sync */
+  sat: number = 0 // service assertion time
+  sv: number = 0 // version du document / collection en service
+  lat: number = 0 // local assertion time - (détenue en IDB)
+  lv: number = 0 // version locale (détenue en IDB)
+
+  constructor (def: $Def) { this.def = def }
+}
+
+export class $CollItem extends $DCItem {
+  pks: Set<string> = new Set() // Set des pk des documents de la collection
+  constructor (def: $Def) { super(def)}
+}
+
+export class $DocItem extends $DCItem {
+  doc: $Document | undefined = undefined // Document compilé
+  constructor (def: $Def) { super(def) }
+}
+
+// Decode d'un Document sérialisé
+type Row = {
+  _pk: string
+  v: number
+  // etc.
+}
+
+type APState = {
+  /*
+    1: inscrit, pas encore abonné
+    2: actif, abonné
+    3: synchro demandée au moins une fois
+    (l'état de synchronisation effective est donné par lastSync)
+  */
+  status: number
+  lastSync: number // si non 0, dh de dernière synchro complète
+  perimeter: $Perimeter
+  resolves: Function[]
+}
+
+interface $DCData {
+  v: number
+  incr?: boolean
+}
+
+interface $DocData extends $DCData{
+  data?: Uint8Array
+}
+
+interface $CollData extends $DCData{
+  datas?: Uint8Array[]
+  moved?: Uint8Array[]
+  deleted?: [string, number][]
+}
+
+type Qitem = {
+  svc: string,
+  org: string,
+  item: $DCItem
+}
+
+export class SyncQueue {
+  static qitems: Qitem[] = [] // items en queue ou en sync
+  static syncRunning: boolean = false
+
+  /* Pousse en queue de synchronisation les items de la liste, SAUF,
+    - ceux n'étant plus / pas référencés par un périmètre ACTIF (2)
+    - ceux déjà en cours de sync.
+    FORCE: resync même s'il a été posté, est revenu et qu'aucune notification
+      ne l'a concerné (cad théoriquement à jour)
+    Leur statut devient 1
+      0: sync ni en queue, ni posté
+      1: sync en queue,
+      2: sync posté pas revenu,
+      3: posté, revenu
+      4: changement notifié, à resync
+  */
+  static push (svc: string, org: string, items: $DCItem[], force?: boolean) {
+    for(const item of items) {
+      if (item.syncSt !== 1 && item.syncSt !== 2 &&
+       (force || item.syncSt === 0 || item.syncSt === 4))
+        SyncQueue.qitems.push({ svc, org, item })
+    }
+    if (SyncQueue.syncRunning || !SyncQueue.qitems.length || !session().syncOK) return
+    SyncQueue.syncRunning = true
+    setTimeout(async () => {
+      await SyncQueue.doSyncs()
+    }, 1)
+  }
+
+  static async doSyncs () {
+    while (SyncQueue.qitems.length) {
+      let x: any = SyncQueue.qitems[0]
+      const svc = x.svc
+      const org = x.org
+      const std = stores.getDocStore(svc, org)
+      if (!std) continue
+      const sync = new FW$Sync(svc, org)
+      const runningItems: Map<string, $DCItem> = new Map()
+      for(let n = 0; n < 10; n++) {
+        x = SyncQueue.qitems[0]
+        if (!x || x.svc !== svc || x.org !== org) break
+        SyncQueue.qitems.shift()
+        x.item.syncSt = 2
+        runningItems.set(x.item.def.definition, x.item)
+        sync.addDef(x.item.def, x.item.lv)
+        if (x.item.lv || x.item.def.isColl) break
+      }
+      const [sat, syncs, hbc] = await sync.post()
+      if (sat !== 0) {
+        std.manageHbc(2, hbc)
+        for(const definition in syncs) {
+          const def = new $Def(definition)
+          // SEULES les definitions VALIDES pour la session prises en compte
+          if (def.isValid(svc)) {
+            const dcdata = (syncs as any)[definition] as $DCData
+            const item = runningItems.get(definition)
+            if (item) {
+              item.syncSt = 3
+              await std.storeDC(item, sat, dcdata)
+            }
+          }
+        }
+        std.checkResolves()
+      } else { // échec: remise en syncQueue des items
+        for (const [, item] of runningItems) {
+          item.syncSt = 2
+          SyncQueue.qitems.unshift({ svc, org, item})
+        }
+        session().syncOK = false
+        break
+      }
+    }
+    SyncQueue.syncRunning = false
+  }
+}
+
+/* Les DocStore sont créés en début de session pour héberger les documents
+et collections de la session pour chauqe couple svc / org.
+Ils sont détruits en fin de session.
+*/
+export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
+
+    /* State *********************************************/
+    const svc = id.substring(0, id.indexOf('/'))
+    const org = id.substring(id.indexOf('/') + 1)
+    let hasLocal = session().hasLocal
+    let hasNet = session().hasNet
+
+    const subsOK: Ref<boolean>= ref(false)
+
+    let docs = reactive({  } as any)
+
+    /* Deux formes de collections selon leur def:
+      0: Auteur : tous les auteurs
+      2: Article/auteur/pkauteur : les messages dont l'auteur est pkauteur
+      value: CollItem
+    */
+    const colls = reactive({  } as any)
+
+    const getXref = (def: $Def) : Set<string> => {
+      return session().getXref(svc, org, def)
+    }
+
+    const upd = (item: $DCItem) => {
+      if (item.def.type === 1) {
+        delete docs[item.def.definition]
+        docs[item.def.definition] = item
+      } else {
+        delete colls[item.def.definition]
+        colls[item.def.definition] = item
+      }
+    }
+
+    const getItem = (def: $Def, create?: boolean) => {
+      let item = def.isColl ? colls[def.definition] : docs[def.definition]
+      if (!item && create) {
+        item = def.isColl ? new $CollItem(def) : new $DocItem(def)
+        docs[def.definition] = item
+      }
+      return item
+    }
+
+    const activePerims = reactive({  } as any)
+    const activePerimsIds = () : Set<string> => {
+      const s = new Set<string>()
+      for(const x in activePerims) s.add(x)
+      return s
+    }
+    const removeActiveP = (id: string) : void => {
+      delete activePerims[id]
+    }
+    const getApstate = (pid: string) : APState => {
+      return activePerims[pid]
+    }
+    /************************************************/
+
+    const getDoc = (cl: string, pk: string) : $Document | undefined => {
+      const item = docs[cl + '/' + pk]
+      if (!item) return undefined
+      if (item.doc) return item.doc
+      return Registry.buildMasked(svc, cl, org, pk)
+    }
+
+    const getSColl = (cl: string, colName: string, pk: string) : Set<string> => {
+      const item = colls[cl + '/' + colName + '/' + pk]
+      return item ? item.pks : new Set()
+    }
+
+    const getColl = (cl: string, pk: string) : Set<string> => {
+      const item = colls[cl + '/' + pk]
+      return item ? item.pks : new Set()
+    }
+
+    // Avis de mises à jour de documents / collections - A RESYNCHRONISER
+    const onNotif = async (defs: $Def[], dh: number, hbc: string) => {
+      if (hbc)
+        manageHbc(5, hbc)
+      const items: $DCItem[] = []
+      for(const def of defs) {
+          const item = getItem(def)
+          if (item) {
+            const pids = getXref(def)
+            let ok = false
+            for (const pid of pids) {
+              const apstate = activePerims[pid]
+              if (apstate && apstate.status >= 2) { ok = true; break }
+            }
+            if (ok) {
+              item.syncSt = 4
+              items.push(item)
+            }
+          }
+        }
+      if (items.length) SyncQueue.push(svc, org, items)
+    }
+
+    /* Ces documents sont modifiés mais SURTOUT NE SONT PLUS dans la collection
+    Les documents de la collection ont une classe différente pour un type 2 ou 3
+    */
+    async function movedDatas (item: $DCItem, sat: number, datas: Uint8Array[])
+    : Promise<Set<string>> {
+      const pks = new Set<string>()
+      const docCl = item.def.type === 2 ? item.def.docCl : item.def.colClass(svc)
+      if (!docCl) return pks
+      for(const data of datas) {
+        const doc = await compileDoc(docCl, data)
+        if (doc) {
+          const v = doc.v
+          pks.add(doc._pk)
+          const def = new $Def(docCl + '/' + doc._pk)
+          if (def.isValid(svc)) {
+            // NE TIENT COMPTE de def QUE si elle est valide.
+            let itemd = getItem(def) as $DocItem
+            // Si itemd n'existait pas on N'EN CREE PAS
+            if (itemd && itemd.sat < sat) {
+              itemd.doc = doc
+              await manageData(itemd, sat, v, data)
+            }
+          }
+        }
+      }
+      return pks
+    }
+
+    /* Ces documents sont ajoutés ou modifiés mais SONT dans la collection
+    Les documents de la collection ont une classe différente pour un type 2 ou 3
+    */
+    async function manageDatas (item: $CollItem, sat: number, datas: Uint8Array[])
+      : Promise<Set<string>> {
+      const pks = new Set<string>()
+      const docCl = item.def.type === 2 ? item.def.docCl : item.def.colClass(svc)
+      if (!docCl) return pks
+      for(const data of datas) {
+        const doc = await compileDoc(docCl, data)
+        if (doc) {
+          const v = doc.v
+          pks.add(doc._pk)
+          const def = new $Def(docCl + '/' + doc._pk)
+          let itemd = getItem(def, true) as $DocItem
+          itemd = new $DocItem(def)
+          if (itemd.sat < sat) {
+            itemd.doc = doc
+            await manageData(itemd, sat, v, data)
+          }
+        }
+      }
+      return pks
+    }
+
+    async function  compileDoc(docCl: string, data: Uint8Array) : Promise<$Document | undefined> {
+      try {
+        const row = decode(data) as Row
+        return await Registry.compile(svc, docCl, org, row)
+      } catch (e: any) {
+        logexc(e)
+        return undefined
+        // TODO
+      }
+    }
+
+    async function manageData (item: $DCItem, sat: number, v: number, data: Uint8Array | null) {
+      // d: null - deleted
+      // d: doc OU pks sérialisé
+      item.sat = sat
+      item.sv = v
+      upd(item)
+      if (hasLocal && item.lv <= v) {
+        if (item.lv < v) {
+          item.lat = sat
+          item.lv = v
+          upd(item)
+          if (idb) await idb.setDC(svc, org, item.def.definition, sat, v, data)
+        }
+        if ((item.lv === v) && (sat - item.lat > MAXLATDELAY)) {
+          item.lat = sat
+          upd(item)
+          if (idb) await idb.updLV(svc, org, item.def, sat, v)
+        }
+      }
+    }
+
+    async function deleteDoc (def: $Def, sat: number, pk: string, v: number) {
+      const defd = new $Def(def.docCl + '/' + pk)
+      const item = getItem(defd) as $DocItem
+      // Si item n'existait pas on N'EN CREE PAS
+      if (item && item.sat < sat) { // créé un Zombi
+        item.doc = Registry.buildZombi(svc, def.docCl, org, v, pk)
+        await manageData(item, sat, v, null)
+      }
+    }
+
+    const storeDC = async (item: $DCItem, now: number, dcdata: $DCData) => {
+      if (item.def.type === 1) await storeDoc(item as $DocItem, now, dcdata as $DocData)
+      else await storeColl(item as $CollItem, now, dcdata as $CollData)
+    }
+
+    /*
+    INTEGRAL
+    - le document n'existe PAS : v == 0, data: absent
+    - le document existe : v: sa version data: son contenu
+    INCREMENTAL
+    - document ayant disparu DEPUIS vs: v version de disparition, data: ZOMBI
+    - document ayant changé (pas disparu): v est sa version, data: son contenu
+    - document inchangé: v: 0
+    */
+    const storeDoc = async (item: $DocItem, sat: number, cd: $DocData) : Promise<void> => {
+      const v  = cd.v
+      const data: Uint8Array | undefined = cd.data
+      if (cd.v === -1) { // credential NON accepté
+        // TOTEST
+        if (item.sv !== -1) {
+          item.sv = -1
+          item.doc = undefined
+          upd(item)
+        }
+        return
+      }
+      if (!cd.incr) { // INTEGRAL
+        if (v === 0) { // n'existe pas / plus - enregistré comme deleted
+          if (item.sv === 0) return // n'existait pas, n'existe toujours pas
+          if (item.sat < sat) {
+            item.doc = Registry.buildZombi(svc, item.def.docCl, org, item.sv, item.def.pk)
+            await manageData(item, sat, v, null)
+          }
+        } else { // Le document existe
+          if (data) { // toujours
+            const doc = await compileDoc(item.def.docCl, data)
+            if (item.sat < sat) {
+              item.doc = doc
+              await manageData(item, sat, v, data)
+            }
+          }
+        }
+      } else { // INCREMENTAL
+        if (v === 0) { // document inchangé
+          item.sat = sat
+          upd(item)
+          if (hasLocal && (sat - item.lat > MAXLATDELAY)) {
+            item.lat = sat
+            item.lv = v
+            upd(item)
+            if (idb) await idb.updLV(svc, org, item.def, sat, v)
+          }
+        } else {
+          if (!data) { // Existait, n'existe plus: enregistré comme deleted
+            if (item.sat < sat) {
+              item.doc = Registry.buildZombi(svc, item.def.docCl, org, item.sv, item.def.pk)
+              await manageData(item, sat, v, null)
+            }
+          } else { // Existe toujours mais a changé
+            const doc = await compileDoc(item.def.docCl, data)
+            if (item.sat < sat) {
+              item.doc = doc
+              await manageData(item, sat, v, data)
+            }
+          }
+        }
+      }
+    }
+
+    /*
+    INTEGRAL
+    - la collection est vide : v == 0 (datas moved deleted sont absents)
+    - la collection n'est PAS vide:
+      - datas : liste des contenus des documents
+      - v : version du document le plus récent de datas
+    INCREMENTAL, liste des changements depuis vs:
+    - collection inchangée: v == 0
+    - collection changée: v != 0 et 1 à 3 listes datas, moved, deleted
+      - v : version du changement le plus récent
+      - datas : [Uint8Array]
+        - documents AJOUTES à la collection depuis vs avec leur data complète
+        - documents qui étaient et sont toujours dans la collection
+          et ONT CHANGE depuis vs avec data complète
+      - moved : [Uint8Array] type 3 seulement
+        - ceux AYANT QUIITE la collection depuis vs avec leur data complète
+      - deleted : couples des [pk, v] des documents qui étaient dans la collection
+        et ONT ETE SUPPRIME: document ZOMBI où v est leur dh de supression
+    */
+    const storeColl = async (item: $CollItem, sat: number, cd: $CollData) : Promise<void> => {
+      const v = cd.v
+      if (v === -1) { // credential NON accepté
+        // TOTEST
+        if (item.sv !== -1) {
+          item.sv = -1
+          item.pks = new Set()
+          upd(item)
+        }
+        return
+      }
+      if (!cd.incr) { // INTEGRAL
+        if (v === 0 && item.sv === 0) return // n'existait pas, n'existe toujors pas
+        if (v === 0) { // collection vide
+          if (item.sat < sat) {
+            item.pks = new Set()
+            await manageData(item, sat, v, null)
+          }
+        } else { // La collection n'est pas vide
+          if (cd.datas) { // tojours, au pire []
+            const pks = await manageDatas(item, sat, cd.datas)
+            if (item.sat < sat) {
+              item.pks = pks
+              const data = encode(Array.from(pks))
+              await manageData(item, sat, v, data)
+            }
+          }
+        }
+      } else {
+        if (v === 0) { // la collection est inchangée - item EXISTE - rafraichissement de sat
+          item.sat = sat
+          upd(item)
+          if (hasLocal && (sat - item.lat > MAXLATDELAY)) {
+            item.lat = sat
+            upd(item)
+            if (idb) await idb.updLV(svc, org, item.def, sat, v)
+          }
+        } else {
+          /* La collection a changé
+          cd.v : est sa version
+          datas et deleted : A AJOUTER (s'il n'y était pas) / CHANGES (s'il y était) pour type 2 et 3
+          moved : seulement pour type 3 */
+          const docCl = item.def.type === 2 ? item.def.docCl : item.def.colClass(svc)
+          const pks = new Set(item.pks)
+          let pks1: Set<string> = new Set()
+          let pks2: Set<string> = new Set()
+          let pks3: Set<string> = new Set()
+          if (cd.datas) {
+            pks1 = await manageDatas(item, sat, cd.datas)
+          }
+          if (cd.deleted) {
+            for(const [pk, v] of cd.deleted) {
+              pks2.add(pk)
+              const defd = new $Def(docCl + '/' + pk)
+              await deleteDoc(defd, sat, pk, v)
+            }
+          }
+          if (cd.moved) {
+            pks3 = await movedDatas(item, sat, cd.moved)
+          }
+          for(const pk of pks1) pks.add(pk)
+          for(const pk of pks2) pks.delete(pk)
+          for(const pk of pks3) pks.add(pk)
+          if (item.sat < sat) {
+            item.pks = pks
+            const data = encode(Array.from(pks))
+            await manageData(item, sat, v, data)
+          }
+        }
+      }
+    }
+
+    const initDocFromIDB = async (item: $DocItem) => {
+      // Item est vierge
+      if (!idb) return
+      const r = await idb.getDC(svc, org, item.def.definition)
+      if (r && r.data)
+        try {
+          const obj = decode(r.data)
+          const doc = await Registry.compile(svc, item.def.docCl, org, obj) as $Document
+          if (item.sv < doc.v) { // sinon l'item retour de sync est plus récent
+            item.doc = doc
+            item.lat = r.lat
+            item.lv = r.v
+            upd(item)
+          }
+        } catch (e: any) {
+          console.error(e.toString)
+        }
+    }
+
+    const initCollFromIDB = async (item: $CollItem) => {
+      if (!idb) return
+      // Item est vierge
+      const r = await idb.getDC(svc, org, item.def.definition)
+      if (r && r.data && r.v > item.sv)
+        try { // sinon celui de retour de sync est plus récent
+          const x = decode(r.data)
+          // TOCHECK
+          // @ts-expect-error
+          item.pks = new Set(x)
+          item.lat = r.lat
+          item.lv = r.v
+          upd(item)
+          const cl = item.def.type === 3 ? item.def.colClass(svc) : item.def.docCl
+          for(const pk of (x as any)) {
+            const itemd = getItem(new $Def(cl + '/' + pk), true)
+            await initDocFromIDB(itemd)
+          }
+        } catch (e: any) {
+          console.error(e.toString)
+        }
+    }
+
+    const loadFromIDB = async (p: $Perimeter) => {
+      for(const def of p.defs) {
+        const item = getItem(def, true)
+        if (!item.sat) {
+          // Chargement depuis IDB, s'il n'a jamais été ni chargé, ni synchronisé
+          if (!item.def.isColl) await initDocFromIDB(item as $DocItem)
+          else await initCollFromIDB(item as $CollItem)
+        }
+      }
+    }
+
+    const doSubs = async () => {
+      const lp1: $Perimeter[] = [] // périmètres à abonner
+      for(const x in activePerims) lp1.push(activePerims[x].perimeter)
+      subsOK.value = false
+      const pgen = Registry.newD(svc, 'SubsGenerator') as $SubsGenerator
+      pgen.init(svc, org).processPerimeters(lp1)
+      subsOK.value = await pgen.subs.subscribe(svc, org, false)
+      if (subsOK.value) for(const p of lp1) {
+        const aps = activePerims[p.id]
+        if (aps.status < 2) aps.status = 2
+      } else {
+        session().syncOK = false
+        console.log('subscription failed !')
+      }
+    }
+
+    const areSubsTodo = () : boolean => {
+      for(const x in activePerims)
+        if (activePerims[x] < 2) return true
+      return false
+    }
+
+    /* fetch rend ACTIF les périmètres de la liste lp qui ne l'étaient pas ...
+    FORCE 2: a) chargement initial en syncMode, b) reprise après PAUSE de synchro
+      - rend ACTIF les périmètres de la liste lp qui ne l'étaient pas
+      - refait les souscriptions
+      - demande une (re)synchrosition des périmètres de lp (MEME S'ILS L'ETAIENT DEJA)
+    FORCE 1: a) changement des périmètres en cours de session (édition de options)
+      - rend ACTIF les périmètres de la liste lp qui ne l'étaient pas
+      - refait les souscriptions, si certaines manquaient
+      - demande une synchronisation des périmètres de lp QUI NE L'ETAIENT PAS
+    FORCE 0: demandes au fil de l'eau de l'application
+      - rend ACTIF les périmètres de la liste lp qui ne l'étaient pas
+      - refait les souscriptions, si certaines manquaient
+      - demande une synchronisation des périmètres de lp QUI NE L'ETAIENT PAS
+    SI WAITING :
+      - ne retourne que quand tous les périmètres de la liste lp
+      auront eu au moins une synchronisation complète.
+      - si tous ont déjà eu une synchro complète, retourne maintenant.
+    */
+    const fetch = async (lp: $Perimeter[], waiting?: boolean, _force?: number) : Promise<void> => {
+      const force = _force || 0
+      for(const p of lp)
+        if (!activePerims[p.id])
+          activePerims[p.id] = { status: 0, lastSync: 0, resolves: [], perimeter: p }
+
+      if (session().planeMode) {
+        for(const p of lp) await loadFromIDB(p)
+        return
+      }
+
+      if (!session().syncOK) return
+
+      const lp2: $Perimeter[] = [] // périmètres à synchroniser
+      if (force  === 2 || areSubsTodo()) await doSubs()
+      for(const p of lp) {
+        const ap = activePerims[p.id]
+        if (force === 2 || (ap.status < 3)) lp2.push(p)
+      }
+
+      if (!lp2.length) return // rien à synchroniser
+
+      if (hasLocal) // pré chargement depuis Cache IDB (des defs jamais chargées)
+        for(const p of lp2) await loadFromIDB(p)
+
+      if (hasNet && subsOK.value) { // synchronisation demandée
+        const items = []
+        for(const p of lp2) {
+          activePerims[p.id].status = 3
+          for(const def of p.defs) items.push(getItem(def))
+        }
+        if (items.length) SyncQueue.push(svc, org, items)
+      }
+
+      if (waiting) {
+        const promises = []
+        for(const p of lp2) {
+          const apstate = activePerims[p.id]
+          if (apstate.lastSync === 0)
+            promises.push(new Promise((resolve) => {
+              apstate.resolves.push(resolve)
+            }))
+        }
+        if (promises.length) {
+          console.log('waiting ' + promises.length + ' promises')
+          await Promise.all(promises)
+        }
+      }
+    }
+
+    /* Resynchronise un périmètre cité, ou sinon tous ceux actifs
+    NORMALEMENT les notifications déclenchent les synchronisations nécessaires.
+    Cependant si par superstition, ou problèmes réseau cahotiques,
+    l'utilisateur veut resynchroniser des périmètres
+    par crainte d'avoir perdu des "notifications",
+    il peut les forcer.
+    */
+    const forcedResync = (p?: $Perimeter) : void => {
+      const lp1: $Perimeter[] = [] // périmètres à souscrire
+      if (p && activePerims[p.id]) lp1.push(p)
+      if (!p) for(const x in activePerims) lp1.push(activePerims[x])
+      if (lp1.length === 0) return
+      const items = []
+      for(const p of lp1)
+        for(const def of p.defs) items.push(getItem(def))
+      if (items.length) SyncQueue.push(svc, org, items, true)
+    }
+
+    /* Retourne le time de la dernière synchronisation COMPLETE
+    pour le périmètre, c'est à dire le sat (service assert time)
+    le plus faible de tous ses defs.
+    */
+    const getLastSync = (apstate: APState) : number => {
+      let lastSync = 0
+      for(const def of apstate.perimeter.defs) {
+        const item = getItem(def)
+        if (item.sat === 0) break
+        if (lastSync === 0) lastSync = item.sat
+        else if (item.sat < lastSync) lastSync = item.sat
+      }
+      return lastSync
+    }
+
+    /* Retour de synchronisation:
+    - check les périmètres actifs ayant fait l'objet
+      d'au moins une demande de synchro
+    - resolve tous les promises en attente sur le périmètre
+      1: inscrit, pas encore abonné
+      2: actif, abonné
+      3: synchro demandée au moins une fois
+      (l'état de synchronisation effective est donné par lastSync)
+    */
+    const checkResolves = () => {
+      for(const idp in activePerims) {
+        const apstate = activePerims[idp]
+        if (apstate.status === 3) {
+          const ls = getLastSync(apstate)
+          if (ls && ls > apstate.lastSync) {
+            apstate.lastSync = ls
+            if (apstate.resolves.length) {
+              for(const resolve of apstate.resolves) resolve(ls)
+              apstate.resolves = []
+            }
+          }
+        }
+      }
+    }
+
+    const getLastSyncTime = (p: $Perimeter) : number => {
+      const apstate = activePerims[p.id]
+      return apstate ? apstate.lastSync : 0
+    }
+
+    /* Attente sur un périmètre:
+    - reviendra la prochaine fois qu'un périmètre aura été synchronisé
+      (en totalité)
+    - retourne la lastSync du périmètre
+    */
+    const waitNextSync = async (p: $Perimeter) : Promise<void> => {
+      if (!hasNet) return
+      let apstate = activePerims[p.id]
+      if (!apstate && apstate.status < 2) return
+      return new Promise((resolve) => {
+        apstate.resolves.push(resolve)
+      })
+    }
+
+    type HB = { dh: number, lc: number[], lost: number    }
+    const hb = reactive({
+      dh: 0, // dh de souscription
+      lc: [], // liste des compteurs accumulés pas en séquence
+      lost: 0 // dh de constat d'un trou (lc.length > 1)
+    } as HB)
+
+    /*
+    hbcMode
+      1: souscription
+      2: synchronisation
+      3: heart beat (ne revient pas)
+      4: op avec notif
+      5: notification
+    */
+    const manageHbc = (hbcMode: number, hbc: string) => {
+      const j = hbc.indexOf(' ')
+      const dh = parseInt(hbc.substring(0, j))
+      const c = parseInt(hbc.substring(j + 1))
+      if (hbcMode === 1) {
+        hb.dh = dh
+        hb.lc = [c]
+        hb.lost = 0
+        return
+      }
+      if (dh !== hb.dh) return // ignoré
+      if (hb.lc.indexOf(c) !== -1) return // doublon ??? ignoré
+      const lc = hb.lc
+      lc.push(c)
+      lc.sort()
+      let x = -1
+      for(let i = 1; i < lc.length; i++)
+        // @ts-expect-error
+        if (lc[i - 1] + 1 !== lc[i]) { x = i; break }
+      // En séquence continue jusqu'à x (premier divergent)
+      if (x === -1) { // tous en séquence
+        // @ts-expect-error
+        hb.lc = [lc[lc.length - 1]]
+        hb.lost = 0
+        return
+      }
+      hb.lc = lc.splice(0, x - 1)
+      const now = Date.now()
+      if (!hb.lost) hb.lost = now
+      const d = now - hb.lost
+      console.log('HBC leaks: ' + d + 'ms dh:' + hb.dh + ' seq:' + hb.lc.join(','))
+      if (d > 5000) {
+        // trouée depuis plus de 5 secondes
+        session().syncOK = false
+      }
+    }
+
+    return {
+      svc, org, getXref, getApstate, subsOK,
+      getItem,
+      onNotif, storeDC, checkResolves,
+      getDoc, getColl, getSColl, activePerimsIds, removeActiveP,
+      fetch, waitNextSync, forcedResync, getLastSyncTime,
+      manageHbc
+    } as IDocStore
+  })()

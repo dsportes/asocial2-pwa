@@ -18,7 +18,9 @@ Les instances créées sont accessibles depuis tout type de script (même pas se
 */
 
 import { useStarterStore } from '@/starter/store'
-import { useStoreDynDoc } from '../demo/doc-store'
+import { useSafeStore } from '../stores/safe-store'
+
+import { useDocStore } from '../stores/docs'
 
 // import { useCounterStore } from '../demo/counter'
 
@@ -27,6 +29,9 @@ export default class Stores {
 
   private static _starter: any
   static get starter() { if (!this._starter) this._starter = useStarterStore(); return this._starter}
+
+  private static _safe: any
+  static get safe() { if (!this._safe) this._safe = useSafeStore(); return this._safe}
 
   /*
   private static _counter: any
@@ -43,7 +48,8 @@ export default class Stores {
     let st = this.dynamicDocStores.get(k)
     if (!st) {
       if (noforce) return undefined
-      const useStore = useStoreDynDoc(k)
+      const useStore = useDocStore(k)
+      // @ts-expect-error
       st = useStore()
       this.dynamicDocStores.set(k, st)
     }
