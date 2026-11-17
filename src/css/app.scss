@@ -1,0 +1,62 @@
+@import 'quasar-variables.scss';
+
+@font-face {
+  font-family: 'Comfortaa';
+  src: url(/fonts/Comfortaa_wght_.woff2) format("woff2-variations")
+}
+
+@font-face {
+  font-family: 'Ubuntu Mono';
+  src: url(/fonts/UbuntuSansMono_wght_.woff2) format("woff2-variations");
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Ubuntu Mono';
+  src: url(/fonts/UbuntuSansMono-Italic_wght_.woff2) format("woff2-variations");
+  font-style: italic
+}
+
+@font-face {
+  font-family: 'Ubuntu Sans';
+  src: url(/fonts/UbuntuSans_wdth,wght_.woff2) format("woff2-variations");
+  font-style: normal
+}
+
+@font-face {
+  font-family: 'Ubuntu Sans';
+  src: url(/fonts/UbuntuSans-Italic_wdth,wght_.woff2) format("woff2-variations");
+  font-style: italic
+}
+
+body {
+  font-family: 'Ubuntu Sans' !important; 
+  font-weight: 200;
+  font-size:  0.9rem;
+}
+
+.font-mono { font-family: 'Ubuntu Mono' }
+.font-def { font-family: 'Ubuntu Sans'; font-weight: 200 }
+.font-title { font-family: "Comfortaa" }
+
+.title, .title-xxs, .title-xs, .title-sm, .title-md, .title-lg, .title-xl, .title-xxl {
+  font-family: "Comfortaa"
+}
+
+.fs-xxs, .title-xxs { font-size:  $xxs }
+.fs-xs, .title-xs { font-size:  $xs }
+.fs-sm, .title-sm { font-size:  $sm }
+.fs-md, .title-md { font-size:  $md }
+.fs-lg, .title-lg { font-size:  $lg }
+.fs-xl, .title-xl { font-size:  $xl }
+.fs-xxl, .title-xxl { font-size:  $xxl }
+
+.wxs { max-width: $wxs !important; width: 100% }
+.wsm { max-width: $wsm !important; width: 100% }
+.wmd { max-width: $wmd !important; width: 100% }
+.wlg { max-width: $wlg !important; width: 100% }
+.wxl { max-width: $wxl !important; width: 100% }
+
+.tbp { background: var(--q-primary) !important; color: var(--q-tbptc) !important }
+.tbs { background: var(--q-secondary) !important; color: var(--q-tbstc) !important }
+
