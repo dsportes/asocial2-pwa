@@ -1,0 +1,106 @@
+import { ref, type Ref, reactive, computed } from 'vue'
+import { defineStore, acceptHMRUpdate } from 'pinia'
+import stores from '../starter/allstores'
+
+const decoder = new TextDecoder()
+
+export const useFormStore = defineStore('form', () => {
+
+  const form = ref()
+  const isDemand = ref()
+  // Objet dont chaque property est une Function de check
+  const fnCheck: Ref<any> = ref()
+
+  const diag1 = ref('')
+  const diag2 = ref('')
+
+  const upd = reactive({
+    etc: null,
+    msg: '',
+    msgc: false,
+    etcc: false
+  })
+  const hasChg = computed(() => upd.etcc || upd.msgc )
+
+  const editable = computed(() => form.value.status < 3 )
+  const creating = computed(() => form.value.status === 0 )
+  const visU = ref()
+  const visT = ref()
+
+  const diag = computed(() => diag1.value !== '' || diag2.value !== '')
+
+  const onChange = async () => {
+    const ui = stores.ui
+    const f = form.value
+    if (f.status > 2) {
+      diag1.value = ''
+      diag2.value = ''
+      ui.resetEditing()
+      return
+    }
+    const fn = fnCheck.value[form.value.type]
+    diag1.value = fn ? fn() : ''
+    diag2.value = diag1.value ? '' : await f.checkEtc(upd.etc)
+    if (isDemand.value) {
+      upd.etcc = !f.eqEtc(f.etcU, upd.etc)
+      upd.msgc = upd.msg !== f.msgUS
+    } else {
+      upd.etcc = !f.eqEtc(f.etcT, upd.etc)
+      upd.msgc = upd.msg !== f.msgTS
+    }
+
+    if (upd.etcc || upd.msgc) ui.setEditing();
+    else ui.resetEditing()
+  }
+
+  const setFnCheck = (_fnCheck: any) => {
+    fnCheck.value = _fnCheck
+  }
+
+  const startEdit = (formCtx: any) => {
+    form.value = formCtx.form
+    isDemand.value = formCtx.isDemand
+    const f = form.value
+    f.msgUS = !f.msgU ? '' : decoder.decode(f.msgU)
+    // il y a eu un bug avec un msgT en string (normalement corrigé)
+    f.msgTS = !f.msgT ? '' : (typeof f.msgT === 'string' ? f.msgT : decoder.decode(f.msgT))
+    reset()
+    setTimeout(async () => {
+      await onChange()}, 1)
+  }
+
+  const reset = () => {
+    const f = form.value
+    const ui = stores.ui
+    if (f.status !== 0) ui.resetEditing()
+    upd.msg = isDemand.value ? f.msgUS || '' : f.msgTS || ''
+    upd.etc = isDemand.value ? f.cloneEtc(true) : f.cloneEtc(false)
+    visU.value = (f.status === 0 && isDemand.value) || (f.status > 0)
+    visT.value = (f.status === 0 && !isDemand.value) || (f.status > 0)
+  }
+
+  const undo = async () => {
+    if (form.value.status > 2) return
+    reset()
+    await onChange()
+  }
+
+  let exp = reactive({
+    msg: false
+  })
+  const expOnShow = (id: string) => {
+    for (const x of Object.keys(exp)) if (x !== id) (exp as any)[x] = false
+  }
+  const setExp = (id: string) => {
+    (exp as any)[id] = false
+  }
+
+  return {
+    setFnCheck, startEdit, reset, onChange, undo,
+    form, isDemand, diag1, diag2, diag,
+    upd,
+    hasChg, editable, creating, visU, visT,
+    exp, expOnShow, setExp
+  }
+
+})

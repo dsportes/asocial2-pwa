@@ -28,12 +28,12 @@ const appConfig: any = {}
 */
 
 import { appConfig } from '../app/config'
+import { sha256 } from 'js-sha256'
 
-// Initilisations statiues du module
+// Initialisations statiues du module
 const encoder = new TextEncoder()
 // @ts-expect-error
 const p2 = [1, 0, 0, 0, 0, 0]; for (let i = 1; i < 6; i++) p2[i] = p2[i - 1] * 256
-
 
 // Variables disponibles APRES initialisation "setupUtil"
 let boot: any
@@ -188,4 +188,11 @@ export function concat (views: ArrayBufferView[]) {
       offset += uint8view.byteLength
   }
   return buf
+}
+
+export function shaS (x: any) {
+  const u8 = new Uint8Array(sha256.arrayBuffer(x))
+  // return toUrl(keyToB64(u8.subarray(3, 18)))
+  const s = keyToB64(u8.subarray(3, 18))
+  return s.replace(/\+/g, '-').replace(/\//g, '_')
 }

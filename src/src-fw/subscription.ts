@@ -75,8 +75,11 @@ export class $Def {
   constructor (definition: string) {
     const defx = definition.split('/')
     this.type = defx.length === 1 ? 2 : (defx.length === 2 ? 1 : 3)
+    // @ts-expect-error
     this.docCl = defx[0]
+    // @ts-expect-error
     if (this.type !== 2) this.pk = this.type === 1 ? defx[1] : defx[2]
+    // @ts-expect-error
     if (this.type === 3) this.colName = defx[1]
   }
 

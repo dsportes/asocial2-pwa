@@ -1,0 +1,458 @@
+import { ref, computed, reactive, type Ref, watch, inject } from 'vue'
+import { defineStore, acceptHMRUpdate } from 'pinia'
+
+import stores from '../starter/allstores'
+
+import { logexc } from '../src-fw/base'
+import { appConfig } from '../app/config'
+import { sleep } from '../starter/util'
+import { Crypt } from '../src-fw/crypt'
+import { idb, IDB, type Prefs, deleteIDB, type StartPlane  } from '../src-fw/idb'
+import { $Def, $Perimeter, type $Perims, type $DefsXref, buildXref, $Subs } from '../src-fw/subscription'
+import { AOperation, checkStatus } from '../src-fw/operation'
+
+export type EdPref = {
+  code: string
+  obj: any | null
+  orig: any | null
+  diag: string
+  chg: false
+}
+
+export const useSessionStore = defineStore('session', () => {
+  const $t = inject('$t') as Function
+
+  /*
+  0 : avant login
+  1 : authentification faite
+  2 : session en choix d'ouverture
+  3 : session ouverte
+  */
+  const step: Ref<number> = ref(0)
+  const noLocal = ref(false)
+  const noNet = ref(false)
+  const resetdb = ref(false)
+  const okOptions = ref(1)
+  const haschgOptions = ref(false)
+  const syncOK = ref(true)
+  const allOK = ref(true)
+  const netStatus = ref(null)
+
+  const dialogs = reactive({
+    netStatus: false,
+    options: false
+  })
+
+  const reset = () => {
+    step.value = 0
+    noLocal.value = false
+    noNet.value = false
+    resetdb.value = false
+    haschgOptions.value = false
+    syncOK.value = true
+    netStatus.value = null
+    dialogs.netStatus = false
+    dialogs.options = false
+  }
+
+  watch(syncOK, async (v) => {
+    if (!v && orgRoles.value && orgRoles.value.size) {
+      // TOCHECK
+      allOK.value = await checkStatus(orgRoles.value)
+      dialogs.netStatus = true
+    }
+  })
+
+  const hasLocal = computed(() => !noLocal.value)
+  const hasNet = computed(() => !noNet.value)
+  const planeMode = computed(() => noNet.value && !noLocal.value )
+  const syncMode = computed(() => !noNet.value && !noLocal.value )
+  const incMode = computed(() => !noNet.value && noLocal.value )
+  const loginMode = computed(() =>
+    noLocal.value ? (noNet.value ? 4 : 2) : (noNet.value ? 3 : 1)
+  )
+
+  const perims: Ref<$Perims> = ref(new Map())
+  const defsXref: Ref<$DefsXref> = ref(new Map())
+  const getPerimeter =
+    (svc: string, org: string, code: string, docCl: string, pk: string ) => {
+    const m = !perims.value ? undefined : perims.value.get(svc + '/' + org)
+    if (!m) return null
+    const id = (code || '') + '/' + docCl + '/' + pk
+    return m.get(id)
+  }
+  const setDefsXref = (xref: $DefsXref) => {
+    defsXref.value = xref
+  }
+  const getXref = (svc: string, org: string, def: $Def) : Set<string> => {
+    const m = !defsXref.value ? null : defsXref.value.get(svc + '/' + org)
+    return !m ? new Set() :(m.get(def.definition) || new Set())
+  }
+
+  const prefs: Ref<Prefs> = ref(new Map())
+
+  const pref: Ref<string> = ref('')
+  const currentPref = computed(() => !pref.value ? null : (prefs.value as any)[pref.value])
+
+  const orgRoles : Ref<Set<string>> = ref(new Set()) // couples org/role
+  const noDoc = computed(() => !orgRoles.value || !orgRoles.value.size)
+  const orgRolesP : Ref<Set<string> | undefined> = ref() // couples org/role "Potentiels"
+
+  const getOrgRolesP = async (perims: $Perims) => {
+    const s: Set<string> = new Set()
+    for(const [so, m] of perims) {
+      const org = so.substring(so.indexOf('/') + 1)
+      for(const [,p] of m) {
+        const i = p.role.indexOf('_')
+        const svc = p.role.substring(0, i)
+        const site = await AOperation.getSiteOfOrgSvcUrl(org, svc)
+        if (site) s.add(org + '/' + p.role)
+      }
+    }
+    return s
+  }
+
+  const doStep1 = async (sf: any, _ui: any) => {
+    AOperation.reset()
+    stores.resetDocStores()
+    if (hasLocal.value) {
+      // Création si nécessaire de Cache
+      new IDB()
+      const mt = sf.myTrusting
+      if (mt) await mt.addAppsDb()
+    }
+    if (planeMode.value && idb) {
+      const sp: StartPlane = await idb.openPlane()
+      prefs.value = sp.prefs
+      perims.value = sp.perims
+      orgRolesP.value = await getOrgRolesP(perims.value)
+      orgRoles.value = new Set(sp.options.orgRoles || [])
+      pref.value = sp.options.pref || ''
+    } else {
+      perims.value = sf.getPerimeters()
+      orgRolesP.value = await getOrgRolesP(perims.value)
+      prefs.value = sf.mySafePrefs
+      const x = sf.mySafeOptions
+      pref.value = x ? x.pref || '' : ''
+      orgRoles.value = new Set(x ? x.orgRoles || [] : [])
+      if (syncMode.value && idb) {
+        const opts = await idb.openSync()
+        if (opts && opts.pref) pref.value = opts.pref
+        if (opts && opts.orgRoles && opts.orgRoles.length)
+          orgRoles.value = new Set(opts.orgRoles)
+      }
+    }
+    buildXref()
+    resetdb.value = false
+  }
+
+  const doStep2 = async () => {
+    const svcOrgs: Set<string> = new Set(perims.value.keys())
+    for(const svcOrg of svcOrgs) {
+      const i = svcOrg.indexOf('/')
+      const svc = svcOrg.substring(0, i)
+      const org = svcOrg.substring(i + 1)
+      const st = stores.getDocStore(svc, org)
+
+      // Sauf en incognito, fetch les documents / collections des périmètres "avion"
+      if (hasLocal.value && st) {
+        const p2sync: $Perimeter[] = [] // périmètres à synchroniser / charger de IDB
+        const px: Map<string, $Perimeter> | undefined = perims.value.get(svc + '/' + org)
+        if (px) for(const [,p] of px)
+          if (p.plane && orgRoles.value.has(p.org + '/' + p.role))
+            p2sync.push(p)
+        await st.fetch(p2sync, false, 2)
+      }
+    }
+  }
+
+  const setStep = async (s: number, toPage?: string) => {
+    const ui = stores.ui
+    const sf = stores.safe
+    const b = step.value
+    switch (s) {
+      case 0 : {
+        AOperation.reset()
+        ui.resetLoginPage()
+        sf.resetSafeBox()
+        reset()
+        if (b > 1) stores.resetDocStores()
+        step.value = 0
+        return
+      }
+
+      case 1 : // authentification faite
+        // console.log('bip1')
+        await doStep1(sf, ui) // préparation pour permettre le choix des options
+        // console.log('bip2')
+        if (!toPage) {
+          step.value = 1
+          return
+        }
+        /* Sinon les options sont celles par défaut (sans choix)
+        et on lance la session immédiatement sur la page souhaitée */
+
+      case 2 : // ouverture effective de la session après les choix faits
+        if (syncMode.value && idb) {
+          if (resetdb.value) {
+            idb.close()
+            await deleteIDB(appConfig.APPNAME, sf.auth.userId)
+            new IDB()
+            await idb.open()
+          }
+          const options = { pref: pref.value, orgRoles: Array.from(orgRoles.value) }
+          await idb.storeOptions(options)
+          await idb.storePrefs(prefs.value)
+          await idb.storePerims(perims.value)
+        }
+
+        await doStep2() // initialisation des DocStore, subs / sync en syncMode
+        ui.setPage(toPage || 'app')
+        step.value = 2
+    }
+  }
+
+  const credsChange = () => {
+    // TOCHECK
+    // @ts-expect-error
+    if (sessionId.step >= 1)
+      setTimeout(async () => { await onCredsOptionsChange() }, 1)
+  }
+
+  const chgOptions = async (_pref: string , _orgRoles: string[], toSave: boolean) => {
+    pref.value = _pref
+    orgRoles.value = new Set(_orgRoles || [])
+
+    if (toSave) {
+      const _slor = _orgRoles.sort().join(' ')
+      if (hasNet.value) {
+        const sf = stores.safe
+        const opts = sf.mySafeOptions || { pref: '', orgRoles: []}
+        const slor = opts.orgRoles.sort().join(' ')
+        if (slor !== _slor || opts.pref !== _pref) {
+          const options = { pref: _pref, orgRoles: _orgRoles }
+          await sf.setOptions(options)
+        }
+      } else if (planeMode.value && idb) {
+        const opts = await idb.getOptions() || { pref: '', orgRoles: []}
+        const slor = opts.orgRoles.sort().join(' ')
+        if (slor !== _slor || opts.pref !== _pref) {
+          const options = { pref: _pref, orgRoles: _orgRoles }
+          await idb.storeOptions(options)
+        }
+      }
+    }
+
+    if (step.value === 1) {
+      await setStep(2)
+    } else {
+      setTimeout(async () => { await onCredsOptionsChange() }, 1)
+    }
+  }
+
+  // Sur changement des options OU resynchronisation
+  const onCredsOptionsChange = async () => {
+    const sf = stores.safe
+    const wasSync = syncOK.value
+    syncOK.value = true
+    const svcOrgsBefore: Set<string> = new Set(perims.value.keys())
+    perims.value = sf.getPerimeters()
+    buildXref()
+    orgRolesP.value = await getOrgRolesP(perims.value)
+    const svcOrgs: Set<string> = new Set(perims.value.keys())
+
+    for(const svcOrg of svcOrgsBefore) {
+      if (!svcOrgs.has(svcOrg)) {
+        /* Suite à des suppressions de credentials
+        des svc / org POURRAIENT ne plus être "potentiellement" actifs */
+        const i = svcOrg.indexOf('/')
+        const svc = svcOrg.substring(0, i)
+        const org = svcOrg.substring(i + 1)
+        /* Supprimer la souscription
+        N'étant plus sollicitées, les sync s'arrêteront d'elles-mêmes */
+        if (hasNet) {
+          const subs = new $Subs()
+          await subs.subscribe(svc, org, false)
+        }
+      }
+    }
+
+    for(const svcOrg of svcOrgs) {
+      const i = svcOrg.indexOf('/')
+      const svc = svcOrg.substring(0, i)
+      const org = svcOrg.substring(i + 1)
+      const st = stores.getDocStore(svc, org)
+
+      if (!planeMode.value && st) {
+        // Périmètres "potentiels" recalculés
+        const perimsP: Map<string, $Perimeter> | undefined = perims.value.get(svc + '/' + org)
+
+        const lpBeforeIds = st.activePerimsIds() // actifs avant
+        const lpAfterIds: Set<string> = new Set() // actifs après
+        const p2sync: $Perimeter[] = [] // ajouter à synchroniser
+
+        let force = 1
+        if (perimsP) for(const [x,p] of perimsP) {
+
+          // Maintenir ou ajouter "actif"
+          if ((syncMode.value && p.plane) || lpBeforeIds.has(p.id))
+            lpAfterIds.add(x)
+
+          if (wasSync) {
+            // A synchroniser parce que nouvellement actif: la synchro est OK
+            if (lpAfterIds.has(x) && !lpBeforeIds.has(x))
+              p2sync.push(p)
+          } else {
+            force = 2
+            // TOUS à synchroniser pace que synchro KO
+            if (lpAfterIds.has(x))
+              p2sync.push(p)
+          }
+
+          // A supprimer de la synchronisation ?
+          if (lpBeforeIds.has(x) && !lpAfterIds.has(x))
+            st.removeActiveP(x)
+
+        }
+        if (p2sync.length)
+          await st.fetch(p2sync, false, force)
+      }
+    }
+  }
+
+  let edPref = reactive({ code:'', obj: {}, orig: {}, diag: '', chg: false } as EdPref)
+  const setEdPref = (code: string, obj: any, orig: any) => {
+    edPref.code = code
+    edPref.obj = obj
+    edPref.orig = orig
+    edPref.chg = false
+    edPref.diag = ''
+  }
+  const resetEdPref = () => {
+    edPref.code = ''
+    edPref.obj = null
+    edPref.orig = null
+    edPref.chg = false
+    edPref.diag = ''
+  }
+  const updatePrefs = async (_prefs: Prefs, toSave: boolean) => {
+    prefs.value = _prefs
+    if (toSave && idb) {
+      if (planeMode.value) await idb.storePrefs(_prefs)
+      else stores.safe.updatePrefs(_prefs)
+    }
+  }
+
+  // Gestion des opérations ************************************************
+  const opEncours = ref('')
+  const opEncoursName = ref('')
+  const opDialog = ref(false)
+  const opSpinner = ref(0)
+  const opSignal = ref(false)
+  let opTimer = 0
+  let opTimer2 = 0
+
+  function opCount () {
+    if (opTimer) clearTimeout(opTimer)
+    opTimer = setTimeout(() => {
+      opSpinner.value += 2
+      opCount()
+    }, 2000)
+  }
+
+  function opStart (op: any) {
+    try {
+      opEncours.value = op
+      opEncoursName.value = $t('op_' + op.opName)
+      opSpinner.value = 0
+      opSignal.value = true
+      opDialog.value = true
+      opCount()
+      if (opTimer2) clearTimeout(opTimer2)
+    } catch(e: any) { // !!!!
+      logexc(e)
+    }
+  }
+
+  function opEnd () {
+    if (opTimer) clearTimeout(opTimer)
+    opEncours.value = ''
+    opSpinner.value = 0
+    opDialog.value = false
+    opTimer2 = setTimeout(() => { opSignal.value = false }, 1000)
+  }
+
+  type CLst = {
+    c: string
+    lst: string[]
+  }
+  const orgs = reactive({ c: '', lst: [] } as CLst)
+  const currentOrg = computed(() => orgs.c || '')
+  const setOrg = (org: string) => { orgs.c = org }
+  const setOrgs = (s: Set<string>) => {
+    const s1: Set<string> = new Set(orgs.lst)
+    for(const o of s) s1.add(o)
+    if (orgs.c) {
+      s1.delete(orgs.c)
+      orgs.lst = [orgs.c, ...Array.from(s1.values()).sort()]
+    } else {
+      orgs.lst = Array.from(s1.values()).sort()
+      // @ts-expect-error
+      orgs.c = orgs.lst.length > 0 ? orgs.lst[0] : ''
+    }
+  }
+  const addOrg = (org: string) => {
+    orgs.c = org
+    setOrgs(new Set([org]))
+  }
+
+  const _currentSvc = ref()
+  const currentSvc = computed(() => _currentSvc.value)
+  const setSvc = (svc: string) => { _currentSvc.value = svc }
+
+  return {
+    hasNet, noNet, resetdb, hasLocal, noLocal, planeMode, syncMode, incMode, loginMode,
+
+    step, setStep, dialogs,
+    syncOK, allOK, netStatus, noDoc,
+    perims, getPerimeter, chgOptions, onCredsOptionsChange, getXref, setDefsXref, credsChange,
+    orgRoles, orgRolesP,
+    prefs, pref,
+    edPref, setEdPref, resetEdPref, updatePrefs, currentPref,
+    okOptions, haschgOptions,
+
+    opEncours, opDialog, opSignal, opSpinner, opStart, opEnd,
+
+    orgs, setOrgs, setOrg, addOrg, currentOrg,
+    currentSvc, setSvc
+    // focus, getFocus, lostFocus, closingApp
+  }
+})
+
+/*
+https://pinia.vuejs.org/cookbook/hot-module-replacement.html
+Pinia supports Hot Module replacement so you can edit your stores
+and interact with them directly in your app without reloading the page,
+allowing you to keep the existing state, add, or even remove state, actions, and getters.
+*/
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(useSessionStore, import.meta.hot));
+}
+
+/*
+ const focus = ref(true)
+
+  function getFocus () {
+    focus.value = true
+    callSW({ type: 'FOCUS', arg: true})
+  }
+
+  function lostFocus () {
+    focus.value = false
+    callSW({ type: 'FOCUS', arg: false})
+  }
+
+  function closingApp () {
+    callSW({ type: 'CLOSING'})
+  }
+*/

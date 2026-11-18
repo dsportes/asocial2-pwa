@@ -19,6 +19,8 @@ Les instances créées sont accessibles depuis tout type de script (même pas se
 
 import { useStarterStore } from '@/starter/store'
 import { useSafeStore } from '../stores/safe-store'
+import { useSessionStore } from '../stores/session-store'
+import { useUiStore } from '../stores/ui-store'
 
 import { useDocStore } from '../stores/docs'
 
@@ -33,10 +35,11 @@ export default class Stores {
   private static _safe: any
   static get safe() { if (!this._safe) this._safe = useSafeStore(); return this._safe}
 
-  /*
-  private static _counter: any
-  static get counter() { if (!this._counter) this._counter = useCounterStore(); return this._counter}
-  */
+  private static _session: any
+  static get session() { if (!this._session) this._session = useSessionStore(); return this._session}
+
+  private static _ui: any
+  static get ui() { if (!this._ui) this._ui = useUiStore(); return this._ui}
 
   /* CUSTOM : séquence à reprendre pour chaque CLASSE de store dynamique
   (pas pour chaque instance) */ 
