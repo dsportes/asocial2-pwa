@@ -1,0 +1,16 @@
+<template>
+  <q-btn icon="menu" flat class="q-mr-xs" padding="none"
+    @click="ui.openMenu">
+    <q-badge v-if="ui.editingInCourse" floating color="red" rounded />
+  </q-btn>
+</template>
+
+<script setup lang="ts" vapor>
+import stores from '../starter/allstores'
+
+const ui = stores.ui
+</script>
+
+<style lang="scss" scoped>
+@import '../css/app.scss';
+</style>

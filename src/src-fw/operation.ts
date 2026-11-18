@@ -1,0 +1,680 @@
+import { encode, decode } from '@msgpack/msgpack'
+
+import { appConfig } from '../app/config'
+import { $t, hasMessage } from '../src-fw/util'
+import { AppExc, type CodeLabel, logexc } from './base'
+import { Descriptor } from '../src-fw/descriptor'
+
+import stores from '../starter/allstores'
+import { onPushMsg } from '../stores/docs'
+import { Crypt } from '../src-fw/crypt'
+import { keyFromB64 } from '../starter/util'
+import { $Credential } from '../src-fw/documents'
+import { idb } from '../src-fw/idb'
+
+const encoder = new TextEncoder()
+
+export async function getSite (svc: string, org: string) : Promise<string | undefined> {
+  const e = await AOperation.getOrgSvc(org)
+  return e ? e.get(svc) : undefined
+}
+
+export type SubsToSync = {
+  def: string,
+  v: number
+}
+
+export class DocEnums {
+  static m : Map<string, CodeLabel[]> = new Map()
+
+  static async fetch (svc: string, enumName: string, org: string) : Promise<void> {
+    const n = enumName + (org ? '_' + org : '')
+    let lx = DocEnums.m.get(n)
+    if (!lx)
+      lx = await DocEnums.get(svc, enumName, org)
+  }
+
+  static labelSync (enumName: string, org: string, code: string) {
+    const l = hasMessage('ENUM_' + enumName + '_' + code)
+    if (l) return l
+    const n = enumName + (org ? '_' + org : '')
+    let lx = DocEnums.m.get(n)
+    if (!lx) return ''
+    for (const e of lx) if (e[0] === code) return e[1]
+    return ''
+  }
+
+
+  static async label (svc: string, enumName: string, org: string, code: string) : Promise<string> {
+    await DocEnums.fetch(svc, enumName, org)
+    return DocEnums.labelSync (enumName, org, code)
+  }
+
+  /* DocEnums.get retourne la liste des valeurs (string)
+  de l'énumération enumName : svc$name OU svc$name_org
+  En l'absence du suffixe org, un nom de site est requis.
+  */
+  static async get (svc: string, enumName: string, org: string) : Promise<CodeLabel[]> {
+    const d = Descriptor.getEnumDescriptor(svc, enumName)
+    if (!d) return []
+    const dd = d as Descriptor
+    if (dd.enum && dd.enum.length) return dd.enum
+    // enum externe -
+    const cred = dd.enumCred || ''
+    const n = svc + '/' + dd.docCl + (cred ? '/' + org : '')
+    let values = DocEnums.m.get(n)
+    if (values) return values
+
+    const session = stores.session
+    if (session.planeMode) {
+      if (!idb) return []
+      values = await idb.getEnum(n)
+      if (values) {
+        this.m.set(n, values)
+        return values
+      } else return []
+    }
+
+    const s = await getSite(svc, org)
+    const op = new AdminOperation('ADMIN$getEnum', s || '')
+    try {
+      op.args.enumName = n
+      const res = await op.post(true)
+      values = (res['enum'] as CodeLabel[]) || []
+      if (idb && session.syncMode)
+        await idb.storeEnum(n, values)
+      this.m.set(n, values)
+      return values
+    } catch(e) {
+      await op.ko(e)
+      return []
+    }
+  }
+
+  static async set (svc: string, enumName: string, value: CodeLabel[], org: string)
+    : Promise<boolean> {
+    const sf = stores.safe
+    const d = Descriptor.getEnumDescriptor(svc, enumName)
+    if (!d) return false
+    const dd = d as Descriptor
+    if (dd.enum && dd.enum.length) return false
+    // enum externe -
+    const cred = dd.enumCred || ''
+    const n = svc + '/' + dd.docCl + (cred ? '/' + org : '')
+    let s = await getSite(svc, org)
+    const op = new AdminOperation('ADMIN$setEnum', s || '')
+    try {
+      op.args.enumName = n
+      op.args.org = org
+      op.args.value = value
+      if (dd.enumCred) {
+        const c = sf.myCredOfDoc(svc, org, dd.enumCred, '1')
+        if (!c) return false
+        await op.sign(c)
+      }
+      await op.post()
+      this.m.set(n, value)
+      return true
+    } catch(e) {
+      await op.ko(e)
+      return false
+    }
+  }
+}
+
+export class CVKeys {
+  static mc: Map<string, Uint8Array> = new Map()
+  static mv: Map<string, Uint8Array> = new Map()
+
+  /* Retourne une clé publique de cryptage de configuation */
+  static async getCKey (site: string, name: string) : Promise<Uint8Array | null> {
+    let k = CVKeys.mc.get(site + '/' + name)
+    if (k) return k
+    const op = new AdminOperation('CONFIG$CKey', site)
+    try {
+      op.args.name = name
+      const res = await op.post(true)
+      const s = res['key'] as string
+      if (!s) return null
+      k = keyFromB64(s)
+      CVKeys.mc.set(site + '/' + name, k)
+      return k
+    } catch (e) {
+      await op.ko(e)
+      return null
+    }
+  }
+
+  /* Retourne une clé publique de cryptage de configuation */
+  static async getVKey (site: string, name: string) : Promise<Uint8Array | null> {
+    let k = CVKeys.mv.get(site + '/' + name)
+    if (k) return k
+    const op = new AdminOperation('CONFIG$VKey', site)
+    op.args.name = name
+    const res = await op.post(true)
+    const s = res['key']
+    if (!s) return null
+    k = keyFromB64(s)
+    CVKeys.mv.set(site + '/' + name, k)
+    return k
+  }
+}
+
+export class AOperation {
+  // Chaque propriété est un code service, sa valeur est son label dans la langue de dev
+  static labels : Map<string, string> = new Map()
+
+  // Map de clé site donnant son URL
+  static urls : Map<string, string> = new Map()
+
+  // Map - clé: org - valeur Map de clé svc donnant son site
+  static orgs : Map<string, Map<string, string>> = new Map()
+
+  static adminSites: Map<string, boolean> = new Map()
+
+  static reset () { AOperation.adminSites.clear() }
+
+  static async loadUrls () : Promise<Map<string, string>> {
+    const m: Map<string, string> = new Map()
+    const op = new MDOperation('$GetSitesUrls')
+    try {
+      const res = await op.post()
+      for(const site in res.urls)
+        m.set(site, res.urls[site])
+    } catch (e) {
+      await op.ko(e)
+      return new Map()
+    }
+    return m
+  }
+
+  static async getServicesLabels (force?: boolean) : Promise<Map<string, string>> {
+    if (!AOperation.labels.size || force) {
+      const op = new MDOperation('$GetServicesLabels')
+      try {
+        const res = await op.post()
+        const obj = res.labels ? JSON.parse(res.labels) : {}
+        const x: Map<string, string> = new Map()
+        for(const svc of Object.keys(obj)) x.set(svc, obj[svc])
+        AOperation.labels = x
+        return AOperation.labels
+      } catch (e) {
+        await op.ko(e)
+        return new Map()
+      }
+    }
+    return AOperation.labels
+  }
+
+  static async setServicesLabels (json: string) {
+    const op = new MDOperation('$SetServicesLabels')
+    try {
+      op.args.params = [json]
+      await op.post()
+    } catch (e) {
+      await op.ko(e)
+    }
+  }
+
+  static async getSites (force?: boolean) : Promise<Map<string, string>> {
+    if (AOperation.urls.size === 0 || force)
+      AOperation.urls = await AOperation.loadUrls()
+    return AOperation.urls
+  }
+
+  static async getSiteUrl (site: string) : Promise<string> {
+    if (AOperation.urls.size === 0) AOperation.urls = await AOperation.loadUrls()
+    return AOperation.urls.get(site) || ''
+  }
+
+  static async getOrgSvc (org: string) : Promise<Map<string, string>> {
+    let e: Map<string, string> | undefined = Operation.orgs.get(org)
+    if (!e) {
+      const op = new MDOperation('$GetOrgSvc')
+      op.args.org = org
+      const res = await op.post()
+      const services = res.services || {} // Objet: { svc1: site1, svc2: site2 ...}
+      e = new Map()
+      for (const svc in services) e.set(svc, services[svc])
+      Operation.orgs.set(org, e)
+    }
+    return e
+  }
+
+  static async getSiteOfOrgSvcUrl (org: string, svc: string) : Promise<string> {
+    const e = await AOperation.getOrgSvc(org)
+    return !e ? '' : e.get(svc) || ''
+  }
+
+  static async setOrgSvc (org: string, svc: string, site: string) {
+    const op = new MDOperation('$SetOrgSvcSite')
+    op.args.params = [org, svc, site]
+    const res = await op.post()
+    const services = res.services || {} // Objet: { svc1: site1, svc2: site2 ...}
+    const e = new Map()
+    for (const svc in services) e.set(svc, services[svc])
+    Operation.orgs.set(org, e)
+    return e
+  }
+
+  opName: string
+  url: string = ''
+  controller: AbortController | null = null
+  aborted: boolean = false
+  args: any = {}
+
+  constructor (opName: string) {
+    this.args['opName'] = opName
+    this.opName = opName
+  }
+
+  async ko (e: any) {
+    e.op = this
+    await stores.ui.displayExc(e)
+  }
+
+  setArgs (args: any) {
+    for(const p of Object.keys(args)) this.args[p] = args[p]
+  }
+}
+
+/* Opération générique ******************************************/
+export class OperationG extends AOperation {
+  static specialOps = new Set(['FW$setSubscription', 'FW$Sync', 'FW$HeartBeat'])
+
+  authRecord: AuthRecord = new AuthRecord()
+  svc: string = ''
+
+  async getSvcOrgUrl () : Promise<string> {
+    const e = await AOperation.getOrgSvc(this.args.org)
+    if (!e)
+      throw new AppExc(3, 'unknown_org', this.opName, [this.args.org])
+    this.args.site = e.get(this.args.svc)
+    if (!this.args.site)
+      throw new AppExc(3, 'unknown_service_for_org', this.opName, [this.args.org, this.args.svc])
+    return await this.getSiteUrl()
+  }
+
+  async getSiteUrl () : Promise<string> {
+    const url = AOperation.getSiteUrl(this.args.site)
+    if (!url)
+      throw new AppExc(3, 'unknown_url_for_site', this.opName, [this.args.site])
+    return url
+  }
+
+  constructor (opName: string) {
+    super(opName)
+  }
+
+  get label () { return $t('OP_' + this.opName) }
+
+  abort () {
+    this.aborted = true
+    if (this.controller) this.controller.abort()
+  }
+
+  /* Ajoute au AuthRecord une signature pour ce role / docId */
+  async sign (c: $Credential) {
+    return await this.authRecord.sign(c)
+  }
+
+  /* Si noAuth est true, l'opération N'INCLUE PAS
+  la signature du user dans AuthRecord.
+  */
+  async post (noAuth?: boolean) : Promise<any> {
+    const session = stores.session
+    try {
+      let u = this.args.site ? await this.getSiteUrl() : await this.getSvcOrgUrl()
+      if (!u.endsWith('/')) u += '/'
+      this.url = u + 'op/'
+
+      if (this.args.svc)
+        this.args.APIVERSION = (appConfig.SERVICES as any)[this.args.svc].api
+
+      session.opStart(this)
+      if (!noAuth)
+        await this.authRecord.signUser()
+      this.args.authRecord = this.authRecord.toObj
+      const body = new Uint8Array(encode(this.args))
+
+      this.controller = new AbortController()
+      this.aborted = false
+
+      const response = await fetch(this.url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/octet-stream',  // sent request
+          'Accept':       'application/octet-stream'   // expected data sent back
+        },
+        signal: this.controller.signal,
+        body
+      })
+      this.controller = null
+      const buf = await response.bytes()
+      const obj = decode(buf) as any
+      if (response.status === 200) {
+        session.opEnd()
+        const hbc = obj['hbc']
+        if (hbc && !OperationG.specialOps.has(this.args.opName)) {
+          const st = stores.getDocStore(this.args.svc, this.args.org, true)
+          if (st) st.manageHbc(4, hbc)
+        }
+        const ntf = obj['notification']
+        if (ntf) {
+          if (appConfig.DEBUG) console.log('Notification received on operation return')
+          await onPushMsg(ntf) // traitement des notifications sur retour d'opération
+        }
+        return obj
+      }
+      if (response.status === 400 || response.status === 401) // 400: AppExc - 401: AppExc inattendue
+        throw AppExc.fromObj(obj)
+      // autres status: 500...
+      const txt = new TextDecoder().decode(buf)
+      throw new AppExc(8, 'HTTP_500_etc', 'post',
+        ['' + response.status, (this.args.svc || '?'), txt])
+    } catch (e: any) {
+      session.opEnd()
+      this.controller = null
+
+      if (e instanceof AppExc) throw e
+      if (this.aborted) throw new AppExc(99, 'interrupted', this.opName)
+      throw new AppExc(8, 'unexpected_network_service_response', 'post',
+        [(this.args.svc || '?'), e.toString()], e.stack || '')
+    }
+  }
+
+}
+
+export class Operation extends OperationG {
+
+  /* Le service est donné,
+  - soit explicitement comme argument,
+  - sinon comme préfixe 'svc$op' du nom de l'opération.
+  */
+
+  get soa () { return { svc: this.args.svc, org: this.args.org } }
+
+  constructor (opName: string, svc: string, org: string) {
+    super(opName)
+    const i = opName.indexOf('$')
+    this.args.svc = svc || opName.substring(0, i)
+    if (!(appConfig.SERVICES as any)[this.args.svc])
+      throw new AppExc(3, 'not_configured_service', opName, [this.args.svc])
+    this.args.org = org
+  }
+}
+
+export class AdminOperation extends OperationG {
+
+  constructor (opName: string, site: string) {
+    super(opName)
+    this.args.site = site
+  }
+}
+
+export const services = async (site: string) : Promise<{at: number, services: string[]} | null> => {
+  const op = new AdminOperation('CONFIG$Services', site)
+  try {
+    const res = await op.post()
+    return res
+  } catch(e: any) {
+    logexc(e)
+    return null
+  }
+}
+
+export const isAdmin = async (site: string) : Promise<boolean> => {
+  if (AOperation.adminSites.has(site)) return AOperation.adminSites.get(site) !== undefined
+  const op = new AdminOperation('ADMIN$isAdmin', site)
+  try {
+    const res = await op.post()
+    const b = res['isAdmin']
+    AOperation.adminSites.set(site, b)
+    return b
+  } catch(e) {
+    await op.ko(e)
+    return false
+  }
+}
+
+export type ADMIN$Status = {
+  st: number // code 0: inconnu 1: UP 9: DOWN
+  at: number // time de dernière mise à jour
+  txt: string // texte explicatif éventuel de l'administrateur
+  now?: number
+}
+export const getSiteStatus = async (site: string, svc: string)
+  : Promise<ADMIN$Status> => {
+  const op = new AdminOperation('ADMIN$getStatus', site)
+  try {
+    op.args.svc = svc
+    const res = await op.post()
+    return res['status']
+  } catch(e) {
+    logexc(e)
+    await stores.ui.diagDisplay($t('site_err'))
+    return { st: 0, at: 0, txt: '' }
+  }
+}
+
+export const setSiteStatus = async (site: string, svc: string, st: number, txt: string)
+  : Promise<ADMIN$Status> => {
+  const op = new AdminOperation('ADMIN$setStatus', site)
+  try {
+    op.args.svc = svc
+    op.args.st = st
+    op.args.txt = txt
+    const res = await op.post()
+    return res['status']
+  } catch(e) {
+    await op.ko(e)
+    return  { st: 0, at: 0, txt: '' }
+  }
+}
+
+abstract class A2Operation extends AOperation {
+  safeStore: string = ''
+
+  constructor (opName: string) {
+    super(opName)
+  }
+
+  async post () : Promise<any>{
+    const session = stores.session
+    try {
+      session.opStart(this)
+      if (!this.url) {
+        this.url = await AOperation.getSiteUrl(this.safeStore)
+        if (!this.url)
+          throw new AppExc(3, 'safeStore_url_not_found', this.opName, [this.safeStore])
+      }
+      this.controller = new AbortController()
+      this.aborted = false
+
+      if (this.args.params) {// signature par l'utilistaur
+        const sf = stores.safe
+        this.args.userId = sf.userId
+        this.args.time = Date.now()
+        const ch = encode([this.args.time, this.args.params])
+        this.args.sign = await Crypt.sign(keyFromB64(sf.auth.S), ch)
+      }
+
+      const response = await fetch(this.url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/octet-stream',  // sent request
+          'Accept':       'application/octet-stream'   // expected data sent back
+        },
+        signal: this.controller.signal,
+        body: new Uint8Array(encode(this.args || {}))
+      })
+      this.controller = null
+      const buf = await response.bytes()
+      const obj = decode(buf)
+      if (response.status === 200) {
+        session.opEnd()
+        return obj
+      }
+      if (response.status === 400 || response.status === 401) // 400: AppExc - 401: AppExc inattendue
+        throw AppExc.fromObj(obj)
+      // autres status: 500...
+      const txt = new TextDecoder().decode(buf)
+      throw new AppExc(8, 'HTTP_500_etc', 'post',
+        ['' + response.status, (this.args.svc || '?'), txt])
+    } catch (e: any) {
+      session.opEnd()
+      this.controller = null
+      if (e instanceof AppExc) throw e
+      if (this.aborted) throw new AppExc(99, 'interrupted', this.opName)
+      throw new AppExc(8, 'unexpected_network_service_response', 'post',
+        [(this.args.svc || '?'), e.toString()])
+    }
+  }
+}
+
+/* Les SafeOperation n'ont pas de AuthRecord"
+Le service Safe vérifie les authentifications par les paramètres
+comme hp0, hr0, etc.
+*/
+export class SafeOperation extends A2Operation {
+  constructor (opName: string, safeStore?: string) {
+    super(opName)
+    if (safeStore) this.safeStore = safeStore
+    else this.url = appConfig.STDSAFE_URL
+  }
+}
+
+export const pingStore = async (store: string) : Promise<boolean> => {
+  const op = new SafeOperation('$PingStore', store)
+  try {
+    const ret = await op.post()
+    return ret['pingstore'] || false
+  } catch(e) {
+    logexc(e)
+    return false
+  }
+}
+
+export class MDOperation extends A2Operation {
+  constructor (opName: string) {
+    super(opName)
+    this.url = appConfig.MASTERDIR_URL
+  }
+}
+
+export const isMDAdmin = async () : Promise<boolean> => {
+  const op = new MDOperation('$IsMDAdmin')
+  try {
+    op.args.params = []
+    const res = await op.post()
+    return res['ismdadmin']
+  } catch(e) {
+    await op.ko(e)
+    return false
+  }
+}
+
+/*
+Toute opération requérant la présence d'au moins un credential est sollicitée en passant
+en arguments un objet de classe `AuthRecord`, construit par l'application et ayant les propriétés suivantes:
+- `userId`: de l'utilisateur.
+- `sessionId`: identifiant de session.
+- `time`: date-heure en seconde de création du record.
+- _challenge_: propriété virtuelle _userId + '/' + time_
+- `userSign`: signature par la clé privée de signature de l'utilisateur, du _challenge_.
+- `signatures`: objet ayant une propriété par ID de credential inscrit dans le record
+  donnant la signature du challenge par la clé privée de signature du credential.
+*/
+export class AuthRecord {
+  svc: string = ''
+  args: any = ''
+  userId: string
+  sessionId: string
+  time: number
+  userSign: Uint8Array | null
+  // Object par role / docId : [token]
+  signatures: any | null
+
+  get challenge () : Uint8Array { return encoder.encode(this.userId + '/' + this.time) }
+
+  constructor () {
+    const sf = stores.safe
+    const session = stores.session
+    this.userId = sf.userId
+    this.sessionId = session.sessionId
+    this.time = Date.now()
+    this.signatures = null
+    this.userSign = null
+  }
+
+  async signUser () {
+    const sf = stores.safe
+    this.userSign = sf.auth && sf.auth.S ?
+      await Crypt.sign(keyFromB64(sf.auth.S), this.challenge) : null
+  }
+
+  get toObj() {
+    return { userId: this.userId, sessionId: this.sessionId, time: this.time,
+      signatures: this.signatures, userSign: this.userSign }
+  }
+
+  async sign (c: $Credential) : Promise<void> {
+    const x = c.privs ? await Crypt.sign(c.privs, this.challenge) : null
+    if (x) {
+      const sign = new Uint8Array(x)
+      if (!this.signatures) this.signatures = {}
+      this.signatures[c.docCl + '/' + c.docPk] = [c.credId, sign]
+    }
+  }
+
+}
+
+export async function checkStatus (orgRoles: string[])
+: Promise<boolean> {
+  const status: any = {}
+  let allOK = true
+  for(const y of orgRoles) {
+    let i = y.indexOf('/')
+    const org = y.substring(0, i)
+    const role = y.substring(i + 1)
+    i = role.indexOf('_')
+    const svc = role.substring(0, i)
+    const site = await AOperation.getSiteOfOrgSvcUrl(org, svc)
+    // existe toujours quand on cherche un status
+    if (!site) continue
+    let esite = status[site]; if (!esite) { esite = { $ST$: 0 }; status[site] = esite}
+    let esvc = esite[svc]; if (!esvc) { esvc = { $ST$: 0 }; esite[svc] = esvc }
+    esvc[org] = 0
+  }
+  for(const site of Object.keys(status)) {
+    const op = new AdminOperation('ADMIN$getAllStatus', site)
+    op.args.status = status[site]
+    try {
+      const res = await op.post()
+      status[site] = res.status
+      status[site]['$ST$'] = 1
+      if (allOK) {
+        for(const svc of Object.keys(res.status)) {
+          const e = res.status[svc]
+          if (svc === '$ST$') {
+            if (e < 1 || e > 8) { allOK = false; break }
+          } else {
+            for(const org of Object.keys(e)) {
+              const st = e[org]
+              if (st < 1 ||  st > 8) { allOK = false; break }
+            }
+            if (!allOK) break
+          }
+        }
+      }
+    } catch (e) {
+      logexc(e)
+      status[site]['$ST$'] = 0
+      allOK = false
+    }
+  }
+  const session = stores.session
+  session.netStatus = status
+  session.allOK = allOK
+  return allOK
+}

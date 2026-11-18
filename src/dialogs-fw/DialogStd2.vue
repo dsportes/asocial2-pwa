@@ -1,0 +1,55 @@
+<template>
+<q-dialog v-model="model" maximized persistent transition-show="slide-right">
+<q-layout container view="hHh lpR fFf" :class="sty()" :style="styc">
+  <q-header>
+    <q-toolbar :class="hdrclass ? hdrclass : 'tbs'" dense>
+      <btn-cond color="none" size="lg" icon="chevron_left" flat
+        @ok="onClose"/>
+      <q-toolbar-title class="titre-lg text-center q-mx-sm">{{title}}</q-toolbar-title>
+      <slot name="btn"/>
+      <btn-bubble v-if="help" :text="help"/>
+      <div v-if="vue" style="color:transparent;width:3px">*<q-tooltip>{{ vue }}</q-tooltip></div>
+    </q-toolbar>
+    <slot name="hdr"/>
+  </q-header>
+  <q-page-container>
+    <q-page>
+      <slot name="default"/>
+    </q-page>
+  </q-page-container>
+</q-layout>
+</q-dialog>
+</template>
+
+<script setup lang="ts" vapor>
+import { ref } from 'vue'
+import { sty } from '../src-fw/util'
+
+import BtnCond from '../components-fw/BtnCond.vue'
+import BtnBubble from '../components-fw/BtnBubble.vue'
+
+const model = defineModel<boolean>()
+const emit = defineEmits(['close'])
+
+const props = defineProps<{
+  vue?: string,
+  title: string, // titre de la top bar
+  help?: string,  // code de loa page d'aide s'il y en a une
+  hdrclass?: string,
+  noclose?: boolean,
+  width?: string
+}>()
+
+const wx: any = {sm: '30', md: '40', lg: '50'}
+const styc = ref('max-width: ' + wx[props.width || 'md'] + 'rem !important; width: 95vw !important;')
+
+const onClose = () => {
+  if (!props.noclose) model.value = false
+  emit('close', true)
+}
+
+</script>
+
+<style lang="scss" scoped>
+@import '../css/app.scss';
+</style>

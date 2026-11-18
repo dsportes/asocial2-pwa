@@ -1,0 +1,90 @@
+<!--
+Edite le etc d'un Form
+FormType('membrecodir', 'k1', ['A'])
+FormType('membreredaction', 'k1', ['A'])
+FormType('auteur', 'k2', ['Readction/1'])
+// Un Auteur peut aussi nommer un co-auteur
+FormType('coauteur', 'k2', ['Readction/1', 'Auteur/$1'])
+-->
+<template>
+<div v-if="fst.form">
+  <!-- membrecodir --------------------------------------------------------------->
+  <div v-if="fst.form.type === 'membrecodir'">
+    <form-inp v-model="errs.pseudo" name="pseudo"
+      type="membrecodir" :svc="fst.form.svc" champ="pseudo" size="pseudo"/>
+  </div>
+
+  <!-- membreredaction --------------------------------------------------------------->
+  <div v-if="fst.form.type === 'membreredaction'">
+    <form-inp v-model="errs.pseudo"
+      type="membreredaction" :svc="fst.form.svc" champ="pseudo" size="pseudo"/>
+  </div>
+
+  <!-- auteur --------------------------------------------------------------->
+  <div v-if="fst.form.type === 'auteur'">
+    <form-inp v-model="errs.nomAuteur"
+      type="auteur" champ="nomAuteur" :svc="fst.form.svc"
+      size="auteur" valbtn />
+    <form-enum v-model="errs.section"
+      type="auteur" champ="section" enum="Section" :svc="fst.form.svc"/>
+  </div>
+
+  <!-- coauteur --------------------------------------------------------------->
+  <div v-if="fst.form.type === 'coauteur'">
+    <form-inp v-model="errs.nomAuteur"
+      type="coauteur" champ="nomAuteur" :svc="fst.form.svc"
+      size="auteur"  />
+    <form-inp v-model="errs.trigramme"
+      type="coauteur" champ="trigramme" :svc="fst.form.svc"
+      size="trig" />
+  </div>
+
+</div>
+</template>
+
+<script setup lang="ts" vapor>
+import { reactive, inject, type Reactive } from 'vue'
+import stores from '../starter/allstores'
+import FormInp from './FormInp.vue'
+import FormEnum from './FormEnum.vue'
+
+const $t = inject('$t') as Function
+
+const fst = stores.form
+
+const errs : Reactive<{ pseudo: String, nomAuteur: String, section: String, trigramme: string }> = reactive({
+  pseudo: '',
+  nomAuteur: '',
+  section: '',
+  trigramme: ''
+})
+
+/**********************************************************************************/
+fst.setFnCheck({
+  membrecodir: () : string => {
+    return errs.pseudo ? $t('FORM_AS2_diag_pseudo', [$t(errs.pseudo)]) : ''
+  },
+
+  membreredaction: () : string => {
+    return errs.pseudo ?  $t('FORM_AS2_diag_pseudo', [$t(errs.pseudo)]) : ''
+  },
+
+  auteur: () : string => {
+    if (errs.nomAuteur) return $t('FORM_AS2_diag_nomAuteur', [$t(errs.nomAuteur)])
+    if (errs.section) return  $t('FORM_AS2_diag_section')
+    return ''
+  },
+
+  coauteur: () : string => {
+    if (errs.nomAuteur) return $t('FORM_AS2_diag_nomAuteur', [$t(errs.nomAuteur)])
+    if (errs.trigramme) return  $t('FORM_AS2_diag_trigramme')
+    return ''
+  }
+})
+/**********************************************************************************/
+
+</script>
+
+<style lang="scss" scoped>
+@import '../css/app.scss';
+</style>

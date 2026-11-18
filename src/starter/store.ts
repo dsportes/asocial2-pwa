@@ -234,7 +234,7 @@ export const useStarterStore = defineStore('starter', () => {
     newVersionDialog, permDialog, notificationAccess, subsToken, 
     onAppUpdate, onSwMessage, onPushMessage, // Hooks invoqués par register-sw
 
-    langOptions, curLangOption, setLang, 
+    curLangOption, setLang, 
     isDark, setDark, 
     width, height,
     hasNet, setNet, getSubsToken

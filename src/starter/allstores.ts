@@ -21,6 +21,7 @@ import { useStarterStore } from '@/starter/store'
 import { useSafeStore } from '../stores/safe-store'
 import { useSessionStore } from '../stores/session-store'
 import { useUiStore } from '../stores/ui-store'
+import { useFormStore } from '../stores/form-store'
 
 import { useDocStore } from '../stores/docs'
 
@@ -40,6 +41,9 @@ export default class Stores {
 
   private static _ui: any
   static get ui() { if (!this._ui) this._ui = useUiStore(); return this._ui}
+
+  private static _form: any
+  static get form() { if (!this._form) this._form = useFormStore(); return this._form}
 
   /* CUSTOM : séquence à reprendre pour chaque CLASSE de store dynamique
   (pas pour chaque instance) */ 

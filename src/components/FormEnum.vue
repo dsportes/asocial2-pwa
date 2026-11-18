@@ -1,0 +1,92 @@
+<template>
+<form-exp :name="champ" :label="$t('TYPE_' + svc + '_' + type + '_' + champ)">
+  <div class="q-ml-sm">
+    <div v-if="fst.visU" class="q-my-sm q-pl-md">
+      <div class="text-italic">{{ $t('FORMdem_2_label') }}</div>
+      <div v-if="fst.isDemand && fst.editable" class="row q-px-xs items-center">
+        <select-enum class="col"
+          v-model="loc1" :svc="fst.form.svc" :org="fst.form.org" :enum="enum"/>
+        <btn-cond v-if="fst.visT && psT" class="col-auto q-ml-sm"
+          flat icon="content_paste" @ok="copyLocU"/>
+        <btn-cond v-if="fst.isDemand && fst.editable" class="col-auto q-ml-sm"
+          flat icon="star" @ok="initLocU"/>
+      </div>
+      <div v-else class="font-mono text-bold">{{  edv }}</div>
+    </div>
+
+    <div v-if="fst.visT" class="q-my-sm q-pl-md">
+      <div class="text-italic">{{ $t('FORMprop_2_label') }}</div>
+      <div v-if="!fst.isDemand && fst.editable" class="row q-px-xs items-center">
+        <select-enum class="col"
+          v-model="loc1" :svc="fst.form.svc" :org="fst.form.org" :enum="enum"/>
+        <btn-cond v-if="fst.visU && psU" class="col-auto q-ml-sm"
+          flat icon="content_paste" @ok="copyLocT"/>
+        <btn-cond v-if="!fst.isDemand && fst.editable" class="col-auto q-ml-sm"
+          flat icon="star" @ok="initLocT"/>
+      </div>
+      <div v-else class="col font-mono text-bold">{{  edv }}</div>
+    </div>
+  </div>
+</form-exp>
+</template>
+
+<script setup lang="ts" vapor>
+import { ref, computed, watch, onMounted, inject } from 'vue'
+import stores from '../starter/allstores.ts'
+import BtnCond from '../components-fw/BtnCond.vue'
+import FormExp from '../components-fw/FormExp.vue'
+import { DocEnums } from '../src-fw/operation.ts'
+
+import SelectEnum from '../components-fw/SelectEnum.vue'
+
+const $t = inject('$t') as Function
+
+const props = defineProps<{
+  type: string,
+  svc: string,
+  champ: string,
+  enum: string
+}>()
+
+const champ = computed(() => props.champ || '')
+
+const err = defineModel()
+
+const fst = stores.form
+
+const edv = ref('')
+
+const psU = computed(() => fst.form.cloneEtc(true)[champ.value])
+const psT = computed(() => fst.form.cloneEtc(false)[champ.value])
+
+const loc1 = ref(fst.upd.etc[champ.value])
+const loc2 = ref(fst.isDemand ? psT.value : psU.value)
+
+const chk = async (v: any) => {
+  fst.upd.etc[champ.value] = v
+  err.value = v.length < 2 ? props.enum + 'absent' : ''
+  await fst.onChange()
+}
+watch(loc1, async (v) => {
+  await chk(v)
+})
+watch(() => fst.upd.etc, (v) => {
+  loc1.value = v[champ.value]
+})
+
+onMounted(async () => {
+  await chk(loc1.value)
+  if (loc2.value) edv.value = await DocEnums.label(fst.form.svc, props.enum || '', fst.form.org, loc2.value)
+  // console.log(edv.value)
+})
+
+const copyLocU = () => { loc1.value = psT.value }
+const copyLocT = () => { loc1.value = psU.value }
+const initLocU = () => { loc1.value = psU.value }
+const initLocT = () => { loc1.value = psT.value }
+
+</script>
+
+<style lang="scss" scoped>
+@import '../css/app.scss';
+</style>

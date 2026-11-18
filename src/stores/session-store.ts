@@ -58,7 +58,7 @@ export const useSessionStore = defineStore('session', () => {
   watch(syncOK, async (v) => {
     if (!v && orgRoles.value && orgRoles.value.size) {
       // TOCHECK
-      allOK.value = await checkStatus(orgRoles.value)
+      allOK.value = await checkStatus(Array.from(orgRoles.value))
       dialogs.netStatus = true
     }
   })
