@@ -22,12 +22,12 @@ event : 'select', svc (org est session.orgs.c)
 
 <script setup lang="ts" vapor>
 import { ref } from 'vue'
-import stores from '../stores/all'
+import stores from '../starter/allstores'
 import { getSite, isAdmin } from '../src-fw/operation'
 import BtnCond from '../components-fw/BtnCond.vue'
 import SelectSvc from '../components-fw/SelectSvc.vue'
 import SelectOrg from '../components-fw/SelectOrg.vue'
-import { SOA } from '../src-fw/base'
+import { type SOA } from '../src-fw/base'
 
 const props = defineProps<{
   restricted?: boolean, // N'accepte QUE les services déclarés dans la configuration de l'app

@@ -39,12 +39,14 @@
 </template>
 
 <script setup lang="ts" vapor>
-import { ref } from 'vue'
-import stores from '../stores/all'
+import { ref, inject } from 'vue'
+import stores from '../starter/allstores'
 import BtnCond from '../components-fw/BtnCond.vue'
 import BtnBubble from '../components-fw/BtnBubble.vue'
 import ScrollArea from '../components-fw/ScrollArea.vue'
-import { $t, sty, dkli } from '../src-fw/util'
+import { sty, dkli } from '../src-fw/util'
+
+const $t = inject('$t') as Function
 
 const ui = stores.ui
 const sf = stores.safe

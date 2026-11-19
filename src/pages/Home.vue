@@ -166,7 +166,7 @@ onMounted(async () => { // Sur onMounted parce que async
 </script>
 
 <style lang="scss" scoped>
-@import './css/app.scss';
+@import '../css/app.scss';
 .wifi { position: fixed; right: 3px; top: 3px; border-radius: 15px; }
 
 .anim1-enter-active { transition: all 0.3s;}
@@ -180,9 +180,9 @@ onMounted(async () => { // Sur onMounted parce que async
   background-size:contain;
 }
 .ano-b {
-  background-image: url('./assets/anonymous-bt.svg');
+  background-image: url('../assets/anonymous-bt.svg');
 }
 .ano-w {
-  background-image: url('./assets/anonymous-wt.svg');
+  background-image: url('../assets/anonymous-wt.svg');
 }
 </style>

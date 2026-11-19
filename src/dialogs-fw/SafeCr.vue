@@ -89,9 +89,9 @@ Events: close done
 </template>
 
 <script setup lang="ts" vapor>
-import { ref, Ref, reactive, watch, computed } from 'vue'
+import { ref, type Ref, reactive, watch, computed, inject } from 'vue'
 
-import stores from '../stores/all'
+import stores from '../starter/allstores'
 import { $t, sty } from '../src-fw/util'
 import { Crypt } from '../src-fw/crypt'
 
@@ -102,6 +102,8 @@ import InputB from '../components-fw/InputB.vue'
 
 import ChooseIt from '../dialogs-fw/ChooseIt.vue'
 import DialogStd2 from '../dialogs-fw/DialogStd2.vue'
+
+const $t = inject('$t') as Function
 
 const sf = stores.safe
 const ui = stores.ui

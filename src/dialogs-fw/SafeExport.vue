@@ -79,18 +79,18 @@ Events: close done
 </template>
 
 <script setup lang="ts" vapor>
-import { ref, Ref, reactive, onMounted, watch } from 'vue'
+import { ref, type Ref, reactive, onMounted, watch, inject } from 'vue'
 import { encode, decode } from '@msgpack/msgpack'
 // @ts-ignore
 import { saveAs } from 'file-saver'
 
-import stores from '../stores/all'
+import stores from '../starter/allstores'
 import { logexc } from '../src-fw/base'
-import { Auth, MDuser } from '../stores/safe-store'
+import { type Auth, type MDuser } from '../stores/safe-store'
 import { Crypt } from '../src-fw/crypt'
 import { $t, quarter, readFile } from '../src-fw/util'
-import { keyToB64, keyFromB64 } from '../src-fw/b64'
-import { ICVS } from '../stores/safe-store'
+import { keyToB64, keyFromB64 } from '../starter/util'
+import { type ICVS } from '../stores/safe-store'
 
 import BarOpen from '../components-fw/BarOpen.vue'
 import BtnCond from '../components-fw/BtnCond.vue'
@@ -99,6 +99,8 @@ import InputB from '../components-fw/InputB.vue'
 import SafestoreSelect from '../components-fw/SafestoreSelect.vue'
 
 import DialogStd1 from '../dialogs-fw/DialogStd1.vue'
+
+const $t = inject('$t') as Function
 
 const encoder = new TextEncoder()
 

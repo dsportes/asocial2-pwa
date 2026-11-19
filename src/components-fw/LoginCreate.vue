@@ -22,18 +22,19 @@
 </template>
 
 <script setup lang="ts" vapor>
-import { reactive, ref } from 'vue'
-import stores from '../stores/all'
+import { reactive, ref, inject } from 'vue'
+import stores from '../starter/allstores'
 
 import { Crypt } from '../src-fw/crypt'
-import { keyToB64 } from '../src-fw/b64'
+import { keyToB64 } from '../starter/util'
 import BtnBubble from '../components-fw/BtnBubble.vue'
 import InputA from '../components-fw/InputA.vue'
 import SelectSite from '../components-fw/SelectSite.vue'
 import { AdminOperation } from '../src-fw/operation'
-import { $t } from '../src-fw/util'
 
 import SafeCr from '../dialogs-fw/SafeCr.vue'
+
+const $t = inject('$t') as Function
 
 const sf = stores.safe
 const ui = stores.ui

@@ -24,7 +24,7 @@ Présente une barre avec un bulle gauche, titre, icon, bulle droite:
 </template>
 
 <script setup lang="ts" vapor>
-import { computed, type Ref } from 'vue'
+import { computed } from 'vue'
 import stores from '../starter/allstores'
 import BtnBubble from '../components-fw/BtnBubble.vue'
 
@@ -36,7 +36,7 @@ const props = defineProps<{
   center?: boolean, //
   disable?: boolean,
   title: string, // titre de la bar
-  bubble: string,  // texte de la bulle d'aide A DROITE
+  bubble?: string,  // texte de la bulle d'aide A DROITE
   disbubble?: string, // texte de la bulle d'aide A DROITE QUAND disable
   bubbleleft?: string,  // texte de la bulle d'aide A GAUCHE
   disbubbleleft?: string, // texte de la bulle d'aide A GAUCHE QUAND disable
