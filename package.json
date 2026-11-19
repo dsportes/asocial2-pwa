@@ -15,6 +15,7 @@
     "@vueuse/core": "^15.0.0",
     "dexie": "^4.4.7",
     "emoji-mart-vue-fast": "^15.0.5",
+    "ext2mime": "^2.0.1",
     "js-sha256": "^1.0.0",
     "pinia": "^4.0.3",
     "quasar": "^2.35.2",

@@ -1,0 +1,149 @@
+<template>
+<div>
+  <std-header/>
+
+  <div :class="sty() + ' column full-width items-center' + (dialogs.newproposal ? ' disabled' : '')">
+    <div class="full-width q-mb-lg">
+      <select-svcorg @select="selsoa"/>
+    </div>
+    <div v-if="!ui.currentForm.soa || !ui.currentForm.soa.org"
+      class="full-width msg">{{ $t('FORMnosoa') }}</div>
+
+    <div v-else class="full-width">
+      <div v-if="ui.currentForm.soa.admin"
+        class="row items-center q-gutter-sm">
+        <q-toggle v-model="ui.currentForm.asAdmin" color="warning"/>
+        <img v-if="ui.currentForm.asAdmin" :src="superman" width="32px"/>
+        <div class="titre-md text-italic">{{ $t('FORMadmin') }}</div>
+      </div>
+
+      <div v-if="!ui.currentForm.pft.size" class="msg">{{ $t('FORMnoprops') }}</div>
+
+      <div v-else :class="'column' + (dialogs.newproposal ? ' disabled' : '')">
+        <div class="tbs row items-center justify-between">
+          <nav-bar class="col-auto q-ma-xs" v-model="ui.navBar"
+            @back="back"/>
+          <type-menu :title="$t('FORMnewp')" :allow="ui.currentForm.pft"
+            @select="openNewP"/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <dialog-std0 v-if="dialogs.newproposal" v-model="dialogs.newproposal"
+    width="pwsm" vh="80"
+    :title="$t('FORMnewp', [ftLabel])"
+    hdrclass="tbs" vue="SponsoringsHeader" @close="close">
+    <template #default>
+      <form-zoom v-if="fctx" v-model="fctx" @done="onDone"/>
+      <form-new v-else :form-type="formType" :isDemand="false" @done="onForm"/>
+    </template>
+  </dialog-std0>
+
+</div>
+</template>
+
+<script setup lang="ts" vapor>
+import { ref, type Ref, reactive, computed, watch, inject } from 'vue'
+
+import { sty } from '../src-fw/util'
+import stores from '../starter/allstores'
+import { FormType } from '../src-fw/descriptor'
+
+import DialogStd0 from '../dialogs-fw/DialogStd0.vue'
+import StdHeader from '../components-fw/StdHeader.vue'
+import NavBar from '../components-fw/NavBar.vue'
+import TypeMenu from '../components-fw/TypeMenu.vue'
+import FormZoom from '../components-fw/FormZoom.vue'
+import SelectSvcorg from '../components-fw/SelectSvcorg.vue'
+import FormNew from '../components/FormNew.vue'
+import { type SOA } from '../src-fw/base'
+import { $Form, type FormCtx } from '../src-fw/documents'
+
+import superman from '../assets/img/superman.jpg'
+const $t = inject('$t') as Function
+
+const ui = stores.ui
+const fst = stores.form
+const session = stores.session
+
+const dialogs = reactive({
+  newproposal: false
+})
+
+// @ts-expect-error
+const formType: Ref<FormType> = ref()
+const ftLabel = computed(() => {
+  if (!formType.value) return '?'
+  const y = $t('TYPE_' + formType.value.svc + '_' + formType.value.type)
+  return y.substring(2)
+})
+
+// @ts-expect-error
+const fctx: Ref<FormCtx> = ref()
+
+watch(() => [ui.currentForm.asAdmin, ui.currentForm.soa], async () => {
+  const soa = ui.currentForm.soa
+  const pft = !soa ? new Set() : await $Form.possibleFormTypes(soa.svc, soa.org, ui.currentForm.asAdmin)
+  ui.currentForm.pft = pft
+})
+
+const back = async () => {
+  const b = await ui.mayClose()
+  if (b)
+    ui.currentForm.zoomed = false
+}
+
+const selsoa = async (soa: SOA) => {
+  if (!soa) { reset(); return }
+  const cf = ui.currentForm
+  cf.soa = soa
+  cf.asAdmin = false
+}
+
+const reset = () => {
+  const cf = ui.currentForm
+  cf.soa = null
+  cf.form = null
+  cf.asAdmin = false
+}
+
+const openNewP = (ft: FormType) => {
+  formType.value = ft
+  fst.form = null
+  // @ts-expect-error
+  fctx.value = undefined
+  dialogs.newproposal = true
+}
+
+const close = async () => {
+  const b = await ui.mayClose()
+  if (b) {
+    dialogs.newproposal = false
+    // @ts-expect-error
+    formType.value = undefined
+    // @ts-expect-error
+    fctx.value = undefined
+    } else
+    dialogs.newproposal = true
+}
+
+const onForm = (form: $Form) => {
+  ui.currentForm.form = form
+  fctx.value = { form, isDemand: false, comment: '' }
+  fst.startEdit(fctx.value)
+}
+
+const onDone = (ok: boolean) => { // si false pas créé
+  // @ts-expect-error
+  formType.value = undefined
+  dialogs.newproposal = false
+  if (ok)
+    ui.currentForm.fnOnUpdate(fctx.value.form.formId)
+}
+
+</script>
+
+<style lang="scss" scoped>
+@import '../css/app.scss';
+</style>

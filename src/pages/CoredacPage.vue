@@ -1,0 +1,179 @@
+<template>
+<div class="column items-center">
+  <div class="pwmd" style="position:relative">
+    <q-splitter v-model="splitterModel" horizontal :style="sth">
+      <template v-slot:before>
+        <div v-if="session.planeMode" class="titre-md text-italic">{{ $t('COREDplane') }}</div>
+        <div v-else>
+          <div v-if="!auteurs.length" class="titre-md text-italic">{{ $t('COREDnoaut') }}</div>
+          <div v-else class="q-pa-xs">
+            <div v-for="(a, idx) in auteurs" :key="idx"
+              :class="'row select cursor-pointer ' + dkli(idx)"
+              @click="selAut(a)">{{ a.nomAuteur }}</div>
+          </div>
+        </div>
+      </template>
+
+      <template #separator>
+        <q-btn color="primary" round size="xs" icon="drag_indicator"/>
+      </template>
+
+      <template v-slot:after>
+        <div v-if="!session.planeMode && aut.a" class="q-pa-xs">
+          <!--div class="row justify-end">
+            <btn-cond :label="$t('validate')" icon="check" confirm @ok="majAut"
+              v-if="aut.newSection !== aut.a.section || aut.newNa !== aut.a.nomAuteur"/>
+          </div-->
+
+          <div class="row items-center q-gutter-md">
+            <div class="titre-md text-italic col-auto">{{ $t('CODIRsa') }}</div>
+            <div class="font-mono">{{ aut.a.section }} - {{ aut.edv }}</div>
+          </div>
+
+          <select-enum svc="AS2" :org="ui.appPage.org" enum="Section"
+            v-model="aut.a.section"
+            class="q-mb-sm q-ml-lg" width="md"
+            @select="majSection"/>
+
+          <div class="row items-center q-gutter-md">
+            <div class="titre-md text-italic col-auto">{{ $t('CODIRna') }}</div>
+            <div class="font-mono">{{ aut.a.nomAuteur }}</div>
+          </div>
+          <line-edit :text="aut.newNa" @change="majNa" class="q-ml-lg"
+            datasize="auteur" width="sm" confirm/>
+
+          <div class="titre-md text-italic q-mt-sm">{{ $t('CODIRcreds') }}</div>
+          <div v-for="([, c], idx) in aut.a.creds" :key="c.credId"
+            :class="'row q-ml-lg cursor-pointer ' + dkli(idx)" @click="openCred(c)">
+            <div class="col-3 font-mono q-pr-sm text-bold">{{ c.props.trig }}</div>
+            <div class="col-9 text-italic q-pr-sm">{{ c.editSusp() }}</div>
+          </div>
+        </div>
+      </template>
+    </q-splitter>
+
+  </div>
+
+<rev-susp v-if="dialogs.credmgnt" v-model="dialogs.credmgnt"
+  svc="AS2" :org="ui.appPage.org" :cred="cred" :curcred="curcred"
+  :title="$t('CODIRcred_tit', [aut.a ? aut.a.nomAuteur : '', curcred.props.trig])"
+  @done="onDone"
+/>
+
+</div>
+</template>
+
+<script setup lang="ts" vapor>
+import { ref, type Ref, watch, computed, reactive, inject } from 'vue'
+
+import stores from '../starter/allstores'
+import { dkli } from '../src-fw/util'
+import RevSusp from '../dialogs-fw/RevSusp.vue'
+import LineEdit from '../components-fw/LineEdit.vue'
+import SelectEnum from '../components-fw/SelectEnum.vue'
+import { Operation, DocEnums } from '../src-fw/operation'
+import { BasicCred, $Credential } from '../src-fw/documents'
+import { AS2$Auteur, AS2$EmbedCred } from '../as2/documents'
+
+const $t = inject('$t') as Function
+
+const ui = stores.ui
+const session = stores.session
+const sf = stores.safe
+
+const dialogs = reactive({
+  credmgnt : false
+})
+
+const sth = computed(() => 'height:' + (ui.appPage.height - 30) + 'px;' )
+
+const splitterModel = ref(33)
+const auteurs: Ref<AS2$Auteur[]> = ref([])
+type Aut = {
+  a?: AS2$Auteur
+  newSection: string
+  newNa: string
+  edv: string
+}
+let aut: Aut = reactive({ newSection: '', newNa: '', edv: '' } as Aut)
+const docPk = ref()
+// @ts-expect-error
+const curcred: Ref<BasicCred> = ref()
+
+const selAut = async (a: AS2$Auteur | undefined) => {
+  aut.a = a
+  aut.newSection = a ? a.section : ''
+  aut.newNa = a ? a.nomAuteur : ''
+  if (a)
+    aut.edv = await DocEnums.label('AS2', 'Section', ui.appPage.org, aut.a ? aut.a.section : '')
+}
+
+const majNa = async (n: string) => {
+  aut.newNa = n
+  await majAut()
+}
+const majSection = async (n: string) => {
+  aut.newSection = n
+  await majAut()
+}
+
+// @ts-expect-error
+const cred: Ref<$Credential> = computed(() => {
+  const m = sf.mySimpleCreds('AS2', ui.appPage.org, 'Redaction') as Map<string, $Credential>
+  return Array.from(m.values())[0]
+})
+
+const listeAuteurs = async () => {
+  const idav = aut.a ? aut.a.autid : ''
+  await selAut(undefined)
+  if (!ui.appPage.org || !ui.appPage.section || session.planeMode) return
+  auteurs.value = await AS2$Auteur.listeParSection(ui.appPage.org, ui.appPage.section, cred.value)
+  for(const a of auteurs.value) {
+    if (a.autid === idav) {
+      await selAut(a)
+      break
+    }
+  }
+}
+
+watch(() => [ui.appPage.org, ui.appPage.count], async () => {
+  await listeAuteurs()
+})
+
+const majAut = async () => {
+  const op = new Operation('MajAuteur', 'AS2', ui.appPage.org)
+  const dd = AS2$Auteur.descriptor
+  op.args.autpk = dd.pkValue(aut.a)
+  if (aut.newNa) op.args.nomAuteur = aut.newNa
+  if (aut.newSection) op.args.section = aut.newSection
+  await op.sign(cred.value)
+  try {
+    const res = await op.post()
+    if (res.status)
+      await ui.diagDisplay($t('AUTko_' + res.status))
+    await listeAuteurs()
+  } catch (e) {
+    await op.ko(e)
+  }
+}
+
+const openCred = (c: AS2$EmbedCred) => {
+  curcred.value = c
+  const autid = aut.a ? aut.a.autid : ''
+  docPk.value = AS2$Auteur.descriptor.pkValue({ autid })
+  dialogs.credmgnt = true
+}
+
+const onDone = async () => {
+  dialogs.credmgnt = false
+  await listeAuteurs()
+  for(const x of auteurs.value)
+    if (aut.a && x.autid === aut.a.autid) { await selAut(x); return }
+}
+
+</script>
+
+<style lang="scss" scoped>
+@import '../css/app.scss';
+.bord1 { border:1px solid $grey-5; border-radius: 5px; padding:2px; }
+</style>

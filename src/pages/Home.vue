@@ -1,0 +1,188 @@
+<template>
+<q-layout view="hHh lpR fFf">
+  <q-header>
+    <std-header v-if="hdrPages.has(ui.page)"/>
+    <safe-header v-if="ui.page === 'safeHome'"/>
+    <admin-header v-if="ui.page === 'admin'"/>
+    <demands-header v-if="ui.page === 'demands'"/>
+    <sponsorings-header v-if="ui.page === 'sponsorings'"/>
+    <auteur-header v-if="ui.page === 'auteur'"/>
+    <coredac-header v-if="ui.page === 'coredac'"/>
+    <codir-header v-if="ui.page === 'codir'"/>
+  </q-header>
+
+  <q-drawer v-if="session.step === 2" v-model="ui.leftMenu" :class="sty()"
+    show-if-above :width="350" :breakpoint="700" elevated >
+    <left-menu/>
+  </q-drawer>
+
+  <q-page-container class="font-def">
+    <!--
+    <transition name="anim1">
+      <q-page v-if="ui.page === 'p1'" class="column">
+        <p1/>
+      </q-page>
+    </transition>
+    <transition name="anim1">
+      <q-page v-if="ui.page === 'p2'" class="column">
+        <p2/>
+      </q-page>
+    </transition>
+    -->
+    <transition name="anim1">
+      <q-page v-if="ui.page === 'safeHome'"
+        :class="'column ano-' + ($q.dark.isActive ? 'w' : 'b')">
+        <safe-home class="q-mt-sm"/>
+      </q-page>
+    </transition>
+    <transition name="anim1">
+      <q-page v-if="ui.page === 'admin'" class="column">
+        <admin-page class="q-mt-sm"/>
+      </q-page>
+    </transition>
+    <transition name="anim1">
+      <q-page v-if="ui.page === 'demands'" class="column">
+        <demands-page class="q-mt-sm"/>
+      </q-page>
+    </transition>
+    <transition name="anim1">
+      <q-page v-if="ui.page === 'sponsorings'" class="column">
+        <sponsorings-page class="q-mt-sm"/>
+      </q-page>
+    </transition>
+    <transition name="anim1">
+      <q-page v-if="ui.page === 'coredac'">
+            <q-resize-observer @resize="ui.setPh" />
+        <coredac-page/>
+      </q-page>
+    </transition>
+    <transition name="anim1">
+      <q-page v-if="ui.page === 'codir'">
+            <q-resize-observer @resize="ui.setPh" />
+        <codir-page/>
+      </q-page>
+    </transition>    
+    <transition name="anim1">
+      <q-page v-if="ui.page === 'auteur'">
+            <q-resize-observer @resize="ui.setPh" />
+        <auteur-page/>
+      </q-page>
+    </transition>
+    <transition name="anim1">
+      <q-page v-if="ui.page === 'app'" :class="'ano-' + ($q.dark.isActive ? 'w' : 'b')">
+        <!--div class="titre-xxl">Hello world</div-->
+      </q-page>
+    </transition>
+    <transition name="anim1">
+      <q-page v-if="ui.page === 'test'" class="column">
+        <test-page class="q-mt-sm"/>
+      </q-page>
+    </transition>
+  </q-page-container>
+
+  <permission-box v-if="session.permDialog"/>
+  <got-it/>
+  <confirm-quit/>
+  <confirm-close/>
+  <confirm-close2/>
+  <confirm-closesession/>
+  <dialog-exc/>
+  <dialog-help/>
+  <net-statusdial v-if="session.dialogs.netStatus"/>
+
+</q-layout>
+</template>
+
+<script setup lang="ts" vapor>
+import { ref, watchEffect, onMounted, inject } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useQuasar } from 'quasar'
+
+import stores from '../starter/allstores'
+
+import { sty } from '../src-fw/util'
+import { keyFromB64, fromUrl } from '../starter/util'
+
+import StdHeader from '../components-fw/StdHeader.vue'
+import SafeHeader from './SafeHeader.vue'
+import AdminHeader from './AdminHeader.vue'
+import DemandsHeader from './DemandsHeader.vue'
+import SponsoringsHeader from './SponsoringsHeader.vue'
+import CoredacHeader from './CoredacHeader.vue'
+import CodirHeader from './CodirHeader.vue'
+
+import AuteurHeader from './AuteurHeader.vue'
+
+import SafeHome from './SafeHome.vue'
+import AdminPage from './AdminPage.vue'
+import DemandsPage from './DemandsPage.vue'
+import SponsoringsPage from './SponsoringsPage.vue'
+import CoredacPage from './CoredacPage.vue'
+import CodirPage from './CodirPage.vue'
+
+import AuteurPage from './AuteurPage.vue'
+import TestPage from './TestPage.vue'
+
+import NetStatusdial from '../dialogs-fw/NetStatusdial.vue'
+
+import LeftMenu from '../components-fw/LeftMenu.vue'
+
+import GotIt from '../dialogs-fw/GotIt.vue'
+import ConfirmQuit from '../dialogs-fw/ConfirmQuit.vue'
+import ConfirmClose from '../dialogs-fw/ConfirmClose.vue'
+import ConfirmClose2 from '../dialogs-fw/ConfirmClose2.vue'
+import ConfirmClosesession from '../dialogs-fw/ConfirmClosesession.vue'
+import DialogExc from '../dialogs-fw/DialogExc.vue'
+import DialogHelp from '../dialogs-fw/DialogHelp.vue'
+
+import { AS2report } from '../as2/documents'
+import { AS2FormsReport } from '../as2/forms'
+import { AS2CredentialsReport } from '../as2/credentials'
+import { FWreport } from '../src-fw/fwdocuments'
+
+// import { appConfig } from '../app/config'
+// const $t = inject('$t') as Function
+
+const hdrPages = ref(new Set(['test']))
+
+const session = stores.session
+const ui = stores.ui
+
+{
+  let exc = AS2report()
+  if (!exc) exc = FWreport()
+  if (!exc) exc = AS2FormsReport()
+  if (!exc) exc = AS2CredentialsReport()
+
+  if (exc) {
+    alert(exc.toString())
+  }
+}
+
+onMounted(async () => { // Sur onMounted parce que async
+  await stores.session.setStep(0)
+})
+
+</script>
+
+<style lang="scss" scoped>
+@import './css/app.scss';
+.wifi { position: fixed; right: 3px; top: 3px; border-radius: 15px; }
+
+.anim1-enter-active { transition: all 0.3s;}
+.anim1-leave-active { transition: all 0.3s;}
+.anim1-enter-from { opacity:0; transform: translateX(50%);}
+.anim1-leave-to { opacity:0; transform: translateX(-50%);}
+
+.ano-b, .ano-w {
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size:contain;
+}
+.ano-b {
+  background-image: url('./assets/anonymous-bt.svg');
+}
+.ano-w {
+  background-image: url('./assets/anonymous-wt.svg');
+}
+</style>

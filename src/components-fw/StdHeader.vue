@@ -26,7 +26,7 @@ const ui = stores.ui
 const session = stores.session
 
 const props = defineProps<{
-  title: string
+  title?: string
 }>()
 
 const tit = computed(() => 

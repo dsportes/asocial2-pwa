@@ -53,7 +53,7 @@ import PermissionBox from './starter/PermissionBox.vue'
   - imorter la "home page" de l'application
   - importer les modules devant être intialisés
 */
-import Home from './demo/Home.vue'
+import Home from './pages/Home.vue'
 
 // Variable de protection contre l'affichage lors de l'initialisation
 const initdone: Ref<boolean> = ref(false)
