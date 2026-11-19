@@ -1,0 +1,143 @@
+<!-- Dialogue APP de récupéation des exceptions au retour des opérations-->
+<template>
+  <q-dialog v-model="ui.appDialogs.DialogExc" persistent>
+    <q-card :class="sty('md')">
+      <q-toolbar class="tbs">
+        <btn-bubble :text="$t('EX' + major + '_bub')"/>
+        <q-toolbar-title class="titre-lg full-width text-center">{{$t('EX' + major + '_label')}}</q-toolbar-title>
+      </q-toolbar>
+      <q-card-section v-if="!abort">
+        <div class="q-mb-xs titre-md text-italic">{{ $t('EX_' + (isApp ? 'isApp' : 'isSvc')) }}</div>
+        <q-separator class="q-mt-md q-mb-xs q-mx-lg" color="orange"/>
+        <sd-nb class="q-my-xs" :text="mdtext"/>
+        <q-separator class="q-mt-xs q-mb-md q-mx-lg" color="orange"/>
+        <div v-if="important.has(exc.code)" class="q-mt-xs titre-md text-italic">{{ $t('EX_toAdmin') }}</div>
+        <div class="q-my-xs font-mono fs-sm">[{{ exc.label }}]</div>
+        <div>
+          <div v-if="org">
+            <span class="text-italic q-mr-sm">{{  $t('EX_org') }}</span>
+            <span class="font-mono text-bold q-mr-md">{{ org }}</span>
+          </div>
+          <div v-if="site">
+            <span class="text-italic q-mr-sm">{{  $t('EX_site') }}</span>
+            <span class="font-mono text-bold">{{ site }}</span>
+            <span class="q-ml-sm font-mono fs-sm q-mr-md">[{{ url }}]</span>
+          </div>
+          <div v-if="svcl">
+            <span class="text-italic q-mr-sm">{{  $t('EX_svc') }}</span>
+            <span>{{ svcl }}</span>
+          </div>
+          <div v-if="exc.opName">
+            <span class="text-italic q-mr-sm">{{  $t('EX_op') }}</span>
+            <span>[{{ exc.opName }}] - {{ $t('op_' + exc.opName) }}</span>
+          </div>
+        </div>
+      </q-card-section>
+      <q-card-actions vertical align="center" class="q-gutter-sm">
+        <btn-cond color="primary" icon="arrow_forward"
+          :label="$t('EX_continue')" @ok="cont"/>
+        <btn-cond color="warning" icon="logout" 
+          :label="$t('EX_quit')" @ok="bye"/>
+        <btn-cond color="warning" icon="refresh" 
+          :label="$t('EX_reload')" @ok="reload"/>
+      </q-card-actions>
+      <q-card-section v-if="!abort && exc.stack" class="q-pt-none">
+        Stack <q-toggle v-model="errstack"/>
+        <q-input v-if="errstack" type="textarea" autogrow v-model="exc.stack" class="q-pa-xs stackclass font-mono"/>
+      </q-card-section>
+    </q-card>
+  </q-dialog>
+</template>
+
+<script setup lang="ts" vapor>
+import { ref, computed, inject } from 'vue'
+
+import stores from '../starter/allstores'
+import { sty, hasMessage } from '../src-fw/util'
+
+import BtnCond from '../components-fw/BtnCond.vue'
+import BtnBubble from '../components-fw/BtnBubble.vue'
+import SdNb from '../components-fw/SdNb.vue'
+
+const $t = inject('$t') as Function
+
+/* code
+public code: number
+public label: string
+public opName: string
+public org: string
+public stack: string
+public args: string[]
+public svc: string
+
+public message: string
+
+background: true si l'opération a été lancé en mode background
+
+Codes:
+  Détecté par l'application
+  1: erreur fonctionnelle APP
+  2: erreur fonctionnelle FW
+  3: assertion FW - BUG: 
+  4: assertion APP - BUG:
+  8: FW : Exception technique DB / réseau
+  9: APP: Exception technique DB / réseau
+  10: FW : Exception technique DB / réseau : configuration suspectée
+  11: APP: Exception technique DB / réseau : configuration suspectée
+  99: Interruption actionnée par l'utilisateur
+
+  Remonté d'un service - assertions 13...16 transmises à l'adiministarteur
+  101: erreur fonctionnelle FW : non détectable par l'application
+  102: erreur fonctionnelle APP : non détectable par l'application
+  103: assertion FW - BUG: l'erreur fonctionnelle est censée avoir été bloquée par l'application
+  104: assertion APP - BUG: l'erreur fonctionnelle est censée avoir été bloquée par l'application
+  105: assertions FW - Données incohérentes non détectables par l'application
+  106: assertions APP - Données incohérentes non détectables par l'application
+  108: FW : Exception technique DB / réseau
+  109: APP : Exception technique DB / réseau
+  110: FW : Exception technique DB / réseau : configuration suspectée
+  111: APP : Exception technique DB / réseau : configuration suspectée
+*/
+const important = new Set([103, 104, 108, 109, 110, 111])
+
+const equiv = {
+  1: 1, 2: 1, 3: 3, 4: 3, 8: 8, 9: 8, 10: 10, 11: 10,
+  101: 1, 102: 1, 103: 3, 104: 4, 105: 105, 106: 105, 
+  107: 105, 108: 8, 109: 8, 110: 10, 111: 10
+}
+const ui = stores.ui
+const errstack = ref(false)
+const exc = computed(() => ui.exc.ex || { code: 0 })
+const op = computed(() => exc.value.op || null)
+const site = computed(() => op.value ? (op.value.args.site || '') : '')
+const url = computed(() => op.value ? (op.value.url || '') : '')
+const svcl = computed(() => { const svc = op.value ? (op.value.args.svc || '') : ''
+  return svc ? '[' + svc + '] - ' + hasMessage('services_' + svc) : ''
+})
+const org = computed(() => op.value ? (op.value.args.org || '') : '')
+// @ts-expect-error
+const major = computed(() => equiv[exc.value.code] || 8)
+const isApp = computed(() => exc.value.code < 100)
+const abort = computed(() => exc.value.code === 99)
+
+const mdtext = computed(() => 
+  $t('EX' + exc.value.code + '_' + exc.value.label, exc.value.args || []))
+
+async function bye () {
+  ui.confirmQuit()
+}
+
+async function reload () {
+  ui.confirmQuit()
+}
+
+function cont () {
+  ui.hideExc()
+}
+
+</script>
+
+<style lang="scss" scoped>
+@import '../css/app.scss';
+.stackclass { height: 15rem; border: 1px solid black; font-size: 0.8rem }
+</style>

@@ -1,0 +1,21 @@
+<!-- Component de fixation du mode net ou non -->
+<template>
+<div class="row justify-between items-center q-my-sm">
+  <q-toggle class="col q-pr-md" v-model="session.noNet" dense color="negative"
+    :label="$t('LOGnet_' + (session.noNet ? '2' : '1'))" />
+  <btn-bubble class="col-auto self-start"
+    :text="$t('LOGnet_3')"/>
+</div>
+</template>
+
+<script setup lang="ts" vapor>
+import stores from '../starter/allstores'
+import BtnBubble from '../components-fw/BtnBubble.vue'
+
+const session = stores.session
+
+</script>
+
+<style lang="scss" scoped>
+@import '../css/app.scss';
+</style>

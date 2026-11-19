@@ -15,7 +15,7 @@ import top_bar$png from '../assets/help/top_bar.png'
 
 export const readme = myreadme
 
-export const sources = {
+export const sources : any = {
   bientot_fr,
   bientot_en,
   boite_automaj_fr,
@@ -29,7 +29,7 @@ export const sources = {
   top_bar$png
 }
 
-export const labels = {
+export const labels : any = {
   fr: {
     boite_automaj: 'Mise à jour automatique des données d\'une session',
     dial_editeur: 'L\'éditeur des textes',

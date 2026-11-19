@@ -1,0 +1,117 @@
+<!-- Barre de menu à gauche (component)
+Contrôlé par ui.leftMenu
+-->
+<template>
+<q-layout container view="hHh lpR fFf">
+  <q-header :class="sty()">
+    <q-toolbar class="tbs">
+      <btn-cond color="none" size="lg" icon="chevron_left" flat @ok="ui.closeMenu()"/>
+      <q-toolbar-title class="titre-md text-center q-mx-sm">
+        {{sf.userName || sf.userId || $t('guest')}}
+      </q-toolbar-title>
+      <help-button page="help"/>
+    </q-toolbar>
+  </q-header>
+  <q-page-container>
+    <!--div><btn-cond label="Test Erreur" @ok="test"/></div-->
+    <div v-if="session.step === 2" class="q-mt-sm q-mb-lg q-px-sm">
+      <btn-cond flat icon="exit_to_app" color="warning" :label="$t('endsession')"
+        @ok="ui.closeMenu(); ui.sessionClose()"/>
+    </div>
+
+    <div v-if="session.step === 2" class="column q-px-sm">
+      <btn-cond v-if="sf.userId"
+        class="q-mb-sm" flat color="warning"
+        @ok="openAdmin">
+        <img :src="superman" class="q-mr-xs" width="24px"/>
+        <div>{{ $t('PAGEadmin') }}</div>
+      </btn-cond>
+      <safe-tools v-if="sf.userId && session.step > 0" short class="q-mb-sm"
+        @close="ui.closeMenu()"/>
+      <btn-cond class="q-mb-sm" flat color="primary"
+        @ok="openDemands" :disable="ui.page === 'demands'">
+        <img :src="invitation" class="q-mr-xs" width="24px"/>
+        <div>{{ $t('PAGEdemands') }}</div>
+      </btn-cond>
+      <btn-cond class="q-mb-sm" flat color="primary"
+        @ok="openSponsorings" :disable="ui.page === 'sponsorings'">
+        <img :src="invitation" class="q-mr-xs" width="24px"/>
+        <div>{{ $t('PAGEsponsorings') }}</div>
+      </btn-cond>
+
+      <btn-cond class="q-mb-sm"
+        flat :label="$t('OPTStitle_2')" icon="more_horiz"
+        @ok="ui.closeMenu(); session.dialogs.options = true"/>
+
+      <btn-cond class="q-mt-md q-mb-sm" icon="home"
+        flat :label="$t('PAGEapp')"
+        @ok="ui.closeMenu(); ui.setPage('app')"/>
+      <btn-cond v-if="hasRedaction" class="q-mb-sm"
+        flat :label="$t('PAGEcoredac')"
+        @ok="ui.closeMenu(); ui.setPage('coredac')"/>
+      <btn-cond v-if="hasAuteur" class="q-mb-sm"
+        flat :label="$t('PAGEauteur')"
+        @ok="ui.closeMenu(); ui.setPage('auteur')"/>
+      <btn-cond v-if="hasCodir" class="q-mb-sm"
+        flat :label="$t('PAGEcodir')"
+        @ok="ui.closeMenu(); ui.setPage('codir')"/>
+
+      <btn-cond v-if="ui.page !== 'test'" class="q-mb-sm"
+        flat :label="$t('PAGEtest')"
+        @ok="ui.closeMenu(); ui.setPage('test')"/>
+
+    </div>
+  </q-page-container>
+
+  <select-optionsdial v-if="session.dialogs.options" v-model="session.dialogs.option"/>
+
+</q-layout>
+</template>
+
+<script setup lang="ts" vapor>
+import { computed, inject } from 'vue'
+import stores from '../starter/allstores'
+import { sty } from '../src-fw/util'
+// import { ErrorTest } from '../src-fw/operations'
+import HelpButton from './HelpButton.vue'
+import BtnCond from './BtnCond.vue'
+import SafeTools from './SafeTools.vue'
+import SelectOptionsdial from '../dialogs-fw/SelectOptionsdial.vue'
+
+import superman from '../assets/img/superman.jpg'
+import invitation from '../assets/invitation.png'
+// import { appConfig } from '../app/config'
+
+const $t = inject('$t') as Function
+
+const sf = stores.safe
+const ui = stores.ui
+const session = stores.session
+
+const hasCodir = computed(() => 
+  sf.mySimpleCreds('AS2', null, 'CoDir').size !== 0)
+const hasRedaction = computed(() => sf.mySimpleCreds('AS2', null, 'Redaction').size !== 0)
+const hasAuteur = computed(() => sf.mySimpleCreds('AS2', null, 'Auteur').size !== 0)
+
+// const test = async () => { await new ErrorTest('AS2', 'doda').run() }
+
+const openAdmin = () => {
+  ui.closeMenu()
+  ui.setPage('admin')
+}
+
+const openDemands = () => {
+  ui.closeMenu()
+  ui.setPage('demands')
+}
+
+const openSponsorings = () => {
+  ui.closeMenu()
+  ui.setPage('sponsorings')
+}
+
+</script>
+
+<style lang="scss" scoped>
+@import '../css/app.scss';
+</style>

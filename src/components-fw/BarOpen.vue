@@ -30,18 +30,18 @@ import BtnBubble from '../components-fw/BtnBubble.vue'
 
 const emit = defineEmits(['open'])
 const props = defineProps<{
-  icon: string,
-  large: boolean, // true si large
-  passive: boolean, // si true, le cursor n'est PAS pointer, pas devent 'open' émis, pas de chevron à droite
-  center: boolean, //
-  disable: boolean,
+  icon?: string,
+  large?: boolean, // true si large
+  passive?: boolean, // si true, le cursor n'est PAS pointer, pas devent 'open' émis, pas de chevron à droite
+  center?: boolean, //
+  disable?: boolean,
   title: string, // titre de la bar
   bubble: string,  // texte de la bulle d'aide A DROITE
-  disbubble: string, // texte de la bulle d'aide A DROITE QUAND disable
-  bubbleleft: string,  // texte de la bulle d'aide A GAUCHE
-  disbubbleleft: string, // texte de la bulle d'aide A GAUCHE QUAND disable
-  size: string,
-  color: string
+  disbubble?: string, // texte de la bulle d'aide A DROITE QUAND disable
+  bubbleleft?: string,  // texte de la bulle d'aide A GAUCHE
+  disbubbleleft?: string, // texte de la bulle d'aide A GAUCHE QUAND disable
+  size?: string,
+  color?: string
 }>()
 
 const clt = computed(() => 'col' 
