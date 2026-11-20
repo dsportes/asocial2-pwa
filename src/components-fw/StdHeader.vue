@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts" vapor>
-import { computed, inject } from 'vue'
+import { computed } from 'vue'
 import stores from '../starter/allstores'
 import SettingsButton from '../components-fw/SettingsButton.vue'
 import BtnBubble from '../components-fw/BtnBubble.vue'

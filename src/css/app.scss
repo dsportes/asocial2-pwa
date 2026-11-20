@@ -60,3 +60,65 @@ body {
 .tbp { background: var(--q-primary) !important; color: var(--q-tbptc) !important }
 .tbs { background: var(--q-secondary) !important; color: var(--q-tbstc) !important }
 
+// Styles de l'application
+
+.bord1 { border: 1px solid $grey; border-radius: 5px; }
+.ellipsis { text-decoration: ellipsis}
+
+.height-2 { height: 2rem }
+.height-3 { height: 3rem }
+.height-4 { height: 4rem }
+.height-5 { height: 5rem }
+.height-8 { height: 8rem }
+
+.dark, .dark0 { background-color: $dark  !important; color: white !important }
+.clear, .clear0 { background-color: $clear !important; color: black !important }
+.dark1 { background-color: $dark1 !important; color: white !important }
+.clear1 { background-color: $clear1 !important; color: black !important }
+
+.bsclear { box-shadow: 5px -5px 5px 0px rgba(0,0,0,0.75) !important }
+.bsdark { box-shadow: 5px -5px 5px 0px rgba(89,89,89,0.75) !important }
+
+.tbw { background: var(--q-warning) !important; color: white !important }
+.tbe { background: var(--q-negative) !important; color: white !important }
+.text-btwtc { color: var(--q-btwtc) !important }
+.bg-btwtc { background: var(--q-btwtc) !important }
+.text-btwbg { color: var(--q-btwbg) !important }
+.bg-btwbg { background: var(--q-btwbg) !important }
+.text-btntc { color: var(--q-btntc) !important }
+.bg-btntc { background: var(--q-btntc) !important }
+.text-btnbg { color: var(--q-btnbg) !important }
+.bg-btnbg { background: var(--q-btnbg) !important }
+
+.msg { font-size: 0.9rem }
+.msg, .msg2 { font-style: italic; font-weight: bold; padding: 1px }
+.text-msg, .msg, .msg2 { color: var(--q-msgtc) !important }
+.bg-msg, .msg, .msg2 { background: var(--q-msgbg) !important }
+.msg3 { font-size: 0.9rem; font-weight: bold; padding: 1px; background: var(--q-negative); color: white}
+
+.select:hover { background-color: var(--q-msgbg) !important; color: black !important; }
+.current { border-left: 4px solid var(--q-warning); padding-left:2px;}
+.nocurrent { border-left: 4px solid transparent; padding-left:2px; }
+
+/* surcharges de quasar */
+.q-toolbar { padding: 0 !important; min-height: 0 !important }
+.q-item__section--avatar { min-width: 0 !important; }
+.q-item__section--side { padding-right: 5px !important; }
+.q-item { padding: 2px !important; }
+.q-stepper__step-inner { padding:5px !important; }
+.q-stepper__tab { min-height: 0 !important; padding: 8px 8px !important; }
+.q-field--highlighted .q-field__label { color: var(--q-warning) !important; }
+.q-field--error .q-field__bottom { color: var(--q-warning) !important; }
+.q-field--filled .q-field__control { padding: 0 !important; }
+.q-menu { max-height: 90vh !important }
+.q-avatar { height: 0.6em }
+.q-drawer__opener { width: 1px !important }
+.q-textarea .q-field__native { padding-top: 0 !important }
+
+/* Barre de scroll */
+/* Works on Firefox */
+* { scrollbar-width: thin; scrollbar-color: blue orange }
+/* Works on Chrome, Edge, and Safari */
+*::-webkit-scrollbar { width: 6px }
+*::-webkit-scrollbar-track { background: orange }
+*::-webkit-scrollbar-thumb { background-color: blue; border-radius: 20px; border: 1px solid orange; }

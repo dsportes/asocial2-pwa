@@ -9,22 +9,15 @@ import { type Ref, ref, reactive } from 'vue'
 import { defineStore } from 'pinia'
 import { encode, decode } from '@msgpack/msgpack'
 
-// import { $t } from '../starter/util'
+import { showNotification } from '../starter/util'
 import { appConfig } from '../app/config'
 import stores from '../starter/allstores'
-import { useSessionStore } from '../stores/session-store'
 
 import { keyFromB64 } from '../starter/util'
 import { $Perimeter, $Def, FW$Sync, $SubsGenerator } from '../src-fw/subscription'
 import { $Document, Registry } from '../src-fw/registry'
 import { logexc } from '../src-fw/base'
 import { idb } from '../src-fw/idb'
-
-let _session: any = null
-const session = () => {
-  if (!_session) _session = useSessionStore()
-  return _session
-}
 
 // Si IDB a une lat plus ancienne il faut rafraîchir sa lat
 const MAXLATDELAY = 3 * 3600 * 1000
@@ -47,7 +40,7 @@ type MsgNotif = {
 export async function onPushMsg (payload: string) {
   const messageNotif =  decode(keyFromB64(payload)) as MsgNotif
   const st = stores.getDocStore(messageNotif.svc, messageNotif.org, true)
-  if (session().syncOK && st && messageNotif.defs && messageNotif.defs.length) {
+  if (stores.session.syncOK && st && messageNotif.defs && messageNotif.defs.length) {
     const definitions: string[] = messageNotif.defs.split(' ')
     const defs: $Def[] = []
     for(const d of definitions) {
@@ -62,7 +55,7 @@ export async function onPushMsg (payload: string) {
     // @ts-expect-error
     if (messageNotif.url) options.data = { url: messageNotif.url || appConfig.LOCATION }
     const t = messageNotif.title || (appConfig.APPNAME + ' - ' + messageNotif.org)
-    await session().registration.showNotification(t, options)
+    await showNotification(t, options)
   }
 }
 
@@ -190,7 +183,7 @@ export class SyncQueue {
        (force || item.syncSt === 0 || item.syncSt === 4))
         SyncQueue.qitems.push({ svc, org, item })
     }
-    if (SyncQueue.syncRunning || !SyncQueue.qitems.length || !session().syncOK) return
+    if (SyncQueue.syncRunning || !SyncQueue.qitems.length || !stores.session.syncOK) return
     SyncQueue.syncRunning = true
     setTimeout(async () => {
       await SyncQueue.doSyncs()
@@ -236,7 +229,7 @@ export class SyncQueue {
           item.syncSt = 2
           SyncQueue.qitems.unshift({ svc, org, item})
         }
-        session().syncOK = false
+        stores.session.syncOK = false
         break
       }
     }
@@ -253,8 +246,8 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
     /* State *********************************************/
     const svc = id.substring(0, id.indexOf('/'))
     const org = id.substring(id.indexOf('/') + 1)
-    let hasLocal = session().hasLocal
-    let hasNet = session().hasNet
+    let hasLocal = stores.session.hasLocal
+    let hasNet = stores.starter.hasNet
 
     const subsOK: Ref<boolean>= ref(false)
 
@@ -267,8 +260,12 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
     */
     const colls = reactive({  } as any)
 
+    const reset = () => {
+      
+    }
+
     const getXref = (def: $Def) : Set<string> => {
-      return session().getXref(svc, org, def)
+      return stores.session.getXref(svc, org, def)
     }
 
     const upd = (item: $DCItem) => {
@@ -663,7 +660,7 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
         const aps = activePerims[p.id]
         if (aps.status < 2) aps.status = 2
       } else {
-        session().syncOK = false
+        stores.session.syncOK = false
         console.log('subscription failed !')
       }
     }
@@ -698,12 +695,12 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
         if (!activePerims[p.id])
           activePerims[p.id] = { status: 0, lastSync: 0, resolves: [], perimeter: p }
 
-      if (session().planeMode) {
+      if (stores.session.planeMode) {
         for(const p of lp) await loadFromIDB(p)
         return
       }
 
-      if (!session().syncOK) return
+      if (!stores.session.syncOK) return
 
       const lp2: $Perimeter[] = [] // périmètres à synchroniser
       if (force  === 2 || areSubsTodo()) await doSubs()
@@ -867,7 +864,7 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
       console.log('HBC leaks: ' + d + 'ms dh:' + hb.dh + ' seq:' + hb.lc.join(','))
       if (d > 5000) {
         // trouée depuis plus de 5 secondes
-        session().syncOK = false
+        stores.session.syncOK = false
       }
     }
 

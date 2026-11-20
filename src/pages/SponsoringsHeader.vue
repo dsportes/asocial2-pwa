@@ -31,7 +31,7 @@
   </div>
 
   <dialog-std0 v-if="dialogs.newproposal" v-model="dialogs.newproposal"
-    width="pwsm" vh="80"
+    width="mwsm" vh="80"
     :title="$t('FORMnewp', [ftLabel])"
     hdrclass="tbs" vue="SponsoringsHeader" @close="close">
     <template #default>

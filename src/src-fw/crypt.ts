@@ -1,8 +1,5 @@
 
 import { sha256 } from 'js-sha256'
-// import rsa from 'jsrsasign'
-// @ts-expect-error
-import { KJUR } from './dsportes_jsrsasign.mjs'
 import { keyToB64, keyFromB64, concat } from '../starter/util'
 
 const encoder = new TextEncoder()
@@ -56,27 +53,6 @@ export function u8ToHex (u8: Uint8Array) : string{
 }
 
 /*
-function ab2str(buf: ArrayBuffer) : string {
-  return String.fromCharCode.apply(null, new Uint8Array(buf));
-}
-
-function str2ab(str: string) : ArrayBuffer{
-  const buf = new ArrayBuffer(str.length)
-  const bufView = new Uint8Array(buf)
-  for (let i = 0, strLen = str.length; i < strLen; i++) bufView[i] = str.charCodeAt(i)
-  return buf
-}
-
-export function keyToB64(key: ArrayBuffer) : string {
-  return window.btoa(ab2str(key))
-}
-
-export function keyFromB64 (key: string) : ArrayBuffer {
-  return str2ab(window.atob(key))
-}
-*/
-
-/*
 Export the given key and write it into the "exported-key" space.
 */
 export function toPem(key: Uint8Array, pub?: boolean) : string {
@@ -104,8 +80,6 @@ export class Crypt {
       hash: {name: "SHA-256"} },
     rsasv: { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256'},
   }
-  // static alg = 'rsa'
-  static alg = 'ecdsa'
 
   static async crypt (cle: Uint8Array | null | undefined, buf: Uint8Array | null | undefined)
   : Promise<Uint8Array | null> {
@@ -148,10 +122,21 @@ export class Crypt {
   }
 
   static async getSVKeyPair () : Promise<KeyPair> {
-    const p = await crypto.subtle.generateKey(Crypt.algs[Crypt.alg], true, ['sign', 'verify'])
+    const p = await crypto.subtle.generateKey(Crypt.algs.ecdsa, true, ['sign', 'verify'])
     const spki = await crypto.subtle.exportKey('spki', p.publicKey)
     const pkcs8 = await crypto.subtle.exportKey('pkcs8', p.privateKey)
     return { pub: new Uint8Array(spki), priv: new Uint8Array(pkcs8) }
+  }
+
+  static async sign (privKey: Uint8Array, data: Uint8Array) : Promise<Uint8Array> {
+    const priv = await crypto.subtle.importKey('pkcs8', privKey as BufferSource, Crypt.algs.ecdsa, false, ['sign'])
+    const sign = await crypto.subtle.sign(Crypt.algs.ecdsasv, priv, data as BufferSource)
+    return new Uint8Array(sign)
+  }
+
+  static async verify (pubKey: Uint8Array, signature: Uint8Array, data: Uint8Array) : Promise<boolean> {
+    const pub = await crypto.subtle.importKey('spki', pubKey as BufferSource, Crypt.algs.ecdsa, true, ['verify'])
+    return await crypto.subtle.verify(Crypt.algs.ecdsasv, pub, signature as BufferSource, data as BufferSource)
   }
 
   static async getAESKey (pubKey: Uint8Array, myPrivKey: Uint8Array): Promise<Uint8Array> {
@@ -161,31 +146,6 @@ export class Crypt {
       { name: 'ECDH', public: pub }, priv, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']
     )
     return new Uint8Array(await crypto.subtle.exportKey('raw', k))
-  }
-
-  static async sign (privKey: Uint8Array, data: Uint8Array) : Promise<Uint8Array> {
-    const priv = await crypto.subtle.importKey('pkcs8', privKey as BufferSource, Crypt.algs[Crypt.alg], false, ['sign'])
-    const sign = await crypto.subtle.sign(Crypt.algs[Crypt.alg + 'sv'], priv, data as BufferSource)
-    return new Uint8Array(sign)
-  }
-
-  static signToAsn1 (sign: Uint8Array) : Uint8Array {
-    const x1 = u8ToHex(sign)
-    // const x2 = rsa.KJUR.crypto.ECDSA.concatSigToASN1Sig(x1)
-    const x2 = KJUR.crypto.ECDSA.concatSigToASN1Sig(x1)
-    return new Uint8Array(hexToArrayBuffer(x2))
-  }
-
-  static signFromAsn1 (sign: Uint8Array) : Uint8Array {
-    const x1 = u8ToHex(sign)
-    // const x2 = rsa.KJUR.crypto.ECDSA.asn1SigToConcatSig(x1)
-    const x2 = KJUR.crypto.ECDSA.asn1SigToConcatSig(x1)
-    return new Uint8Array(hexToArrayBuffer(x2))
-  }
-
-  static async verify (pubKey: Uint8Array, signature: Uint8Array, data: Uint8Array) : Promise<boolean> {
-    const pub = await crypto.subtle.importKey('spki', pubKey as BufferSource, Crypt.algs[Crypt.alg], true, ['verify'])
-    return await crypto.subtle.verify(Crypt.algs[Crypt.alg + 'sv'], pub, signature as BufferSource, data as BufferSource)
   }
 
   static async strongHash (s: string | Uint8Array, pad?: boolean, bin?: boolean)
@@ -263,6 +223,94 @@ export class Crypt {
   }
 }
 
+/* 
+  DER : format WebCrypto
+  RAW : format ASN-1 OpenSSL
+*/
+
+/**
+ * Convertit une signature ECDSA brute (IEEE P1363 : r || s) en format ASN.1 DER.
+ * @param {Uint8Array} rawSig - La signature brute (ex: 64 octets pour P-256)
+ * @returns {Uint8Array} La signature encodée en DER
+ */
+export function rawToDer(rawSig: any) {
+  const half = rawSig.length / 2;
+  const r = rawSig.subarray(0, half);
+  const s = rawSig.subarray(half);
+
+  const encodeInteger = (bytes: any) => {
+    let i = 0;
+    while (i < bytes.length - 1 && bytes[i] === 0) i++;
+    let clean = bytes.subarray(i);
+
+    // Ajout du zéro de padding si le bit de poids fort est >= 0x80
+    if (clean[0] >= 0x80) {
+      const padded = new Uint8Array(clean.length + 1);
+      padded[0] = 0x00;
+      padded.set(clean, 1);
+      clean = padded;
+    }
+
+    const res = new Uint8Array(2 + clean.length);
+    res[0] = 0x02; // Tag INTEGER
+    res[1] = clean.length;
+    res.set(clean, 2);
+    return res;
+  };
+
+  const rDer = encodeInteger(r);
+  const sDer = encodeInteger(s);
+  const totalLen = rDer.length + sDer.length;
+
+  const header = totalLen >= 128 ? [0x30, 0x81, totalLen] : [0x30, totalLen];
+  const der = new Uint8Array(header.length + totalLen);
+  
+  der.set(header, 0);
+  der.set(rDer, header.length);
+  der.set(sDer, header.length + rDer.length);
+
+  return der;
+}
+
+// 66 pour P-521 !!!
+// Code Google IA
+export function derToRaw(derSig: any, keySizeBytes = 66) {
+  let offset = 0;
+
+  if (derSig[offset++] !== 0x30) {
+    throw new Error("Format DER invalide : tag SEQUENCE (0x30) attendu.");
+  }
+
+  offset += derSig[offset] === 0x81 ? 2 : 1;
+
+  const readInteger = () => {
+    if (derSig[offset++] !== 0x02) {
+      throw new Error("Format DER invalide : tag INTEGER (0x02) attendu.");
+    }
+    const len = derSig[offset++];
+    let val = derSig.subarray(offset, offset + len);
+    offset += len;
+
+    // Retrait du padding 0x00 éventuel
+    if (val.length === keySizeBytes + 1 && val[0] === 0x00) {
+      val = val.subarray(1);
+    }
+
+    const fixed = new Uint8Array(keySizeBytes);
+    fixed.set(val, keySizeBytes - val.length);
+    return fixed;
+  };
+
+  const r = readInteger();
+  const s = readInteger();
+
+  const raw = new Uint8Array(keySizeBytes * 2);
+  raw.set(r, 0);
+  raw.set(s, keySizeBytes);
+
+  return raw;
+}
+
 export async function testSH () {
   const x = 'toto est tres tres beau'
   console.log(Crypt.sha(x))
@@ -305,15 +353,16 @@ export async function testECDH () {
   console.log(appSVPub)
   console.log(appSVPriv)
   const sign = await Crypt.sign(appSVPair.priv, x)
-  const signAsn1 = Crypt.signToAsn1(sign)
-  const sign2 = Crypt.signFromAsn1(signAsn1)
+
+  const der = rawToDer(sign)
+  const raw = derToRaw(der, 66)
   const h1 = u8ToHex(sign)
-  const h2 = u8ToHex(signAsn1)
+  const h2 = u8ToHex(der)
   console.log('---- EC / ASN1 -------')
   console.log(h1)
   console.log(h2)
   console.log('----------------------')
-  const h3 = u8ToHex(sign2)
+  const h3 = u8ToHex(raw)
   if (h1 === h3)
     console.log('trop cool !!!')
   else console.log('TOO BAD !!!')

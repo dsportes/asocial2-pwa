@@ -19,8 +19,8 @@
         </div>
       </div>
 
-      <div v-if="session.hasNet">
-        <div v-if="session.permState !== 'granted'" class="q-pa-xs msg">{{ $t('PEinfo') }}</div>
+      <div v-if="starter.hasNet">
+        <div v-if="permState !== 'granted'" class="q-pa-xs msg">{{ $t('PEinfo') }}</div>
         <q-expansion-item v-if="session.step > 1 && !session.noDoc" :label="lbl" dense
           :header-class="(session.syncKO ? 'tbw' : 'tbs') + ' text-bold titre-md text-italic'">
           <net-status/>
@@ -35,7 +35,7 @@
 
 <script setup lang="ts" vapor>
 import stores from '../starter/allstores'
-import { ref, computed, inject } from 'vue'
+import { ref, computed } from 'vue'
 import BtnCond from './BtnCond.vue'
 import NetStatus from './NetStatus.vue'
 
@@ -44,12 +44,17 @@ import { $t } from '../starter/util'
 const icons = ['', 'cloud_sync', 'cloud', 'flight', 'calculate']
 
 const sf = stores.safe
+const starter = stores.starter
 const session = stores.session
+// console.log(session.sessionId)
+
+const permState = computed(() => starter.notificationAccess )
+
 const mode = computed(() => session.loginMode )
 const menum = ref()
 const lbl = computed(() => session.syncKO ? $t('PEsyncko') : $t('PEsyncok'))
 
-const color = computed(() => session.hasNet && session.permState !== 'granted' ? 'negative' :
+const color = computed(() => starter.hasNet && permState.value !== 'granted' ? 'negative' :
    (session.step > 0 ? 'green-5' : 'grey-5'))
 
 const more = () => {

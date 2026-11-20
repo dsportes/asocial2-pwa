@@ -62,7 +62,7 @@ export class IDBsafe {
     if (!IDBsafe.db) try {
       IDBsafe.db = new AppDB('safe')
       await IDBsafe.db.open()
-      if (config.K.myDebug) console.log('IDB open [safe]')
+      if (appConfig.DEBUG) console.log('IDB open [safe]')
       await IDBsafe.load()
     } catch (e: any) {
       if (IDBsafe.db) {
@@ -147,13 +147,13 @@ export class Trusting {
   }
 
   hasAppDb () {
-    const app = config.K.APPNAME
+    const app = appConfig.APPNAME
     if (!this.appsDb || !this.appsDb.length) return false
     return this.appsDb.indexOf(app) !== -1
   }
 
   async addAppsDb (_app?: string) {
-    const app = _app || config.K.APPNAME
+    const app = _app || appConfig.APPNAME
     if (!this.appsDb) this.appsDb = []
     const i = this.appsDb.indexOf(app)
     if (i === -1) {
@@ -163,7 +163,7 @@ export class Trusting {
   }
 
   async delAppsDb (_app?: string) {
-    const app = _app || config.K.APPNAME
+    const app = _app || appConfig.APPNAME
     if (!this.appsDb) this.appsDb = []
     await deleteIDB(app, this.userId)
     const i = this.appsDb.indexOf(app)

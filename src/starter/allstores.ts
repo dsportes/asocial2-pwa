@@ -25,8 +25,6 @@ import { useFormStore } from '../stores/form-store'
 
 import { useDocStore } from '../stores/docs'
 
-// import { useCounterStore } from '../demo/counter'
-
 export default class Stores {
   // Stores statiques à customiser pour chaque application
 
@@ -55,16 +53,19 @@ export default class Stores {
     let st = this.dynamicDocStores.get(k)
     if (!st) {
       if (noforce) return undefined
-      const useStore = useDocStore(k)
-      // @ts-expect-error
-      st = useStore()
+      const st = useDocStore(k)
       this.dynamicDocStores.set(k, st)
     }
     return st
   }
 
   static resetDocStores () {
-    for(const [,st] of this.dynamicDocStores) st.reset()
+    for(const [ ,st] of this.dynamicDocStores)
+      st.$patch({
+        docs: {},
+        colls: {}
+      })
     this.dynamicDocStores.clear()
   }
+
 }

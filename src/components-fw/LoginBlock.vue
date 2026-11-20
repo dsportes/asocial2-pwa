@@ -45,7 +45,7 @@ Event émis: logged
     class="q-my-md q-mx-md" color="orange"/>
 
   <!-- Authentification par alias / phrase -->
-  <div v-if="session.hasNet" class="full-width column">
+  <div v-if="starter.hasNet" class="full-width column">
     <bar-title prefix="LOGap" class="q-mt-sm q-mb-xs text-italic"/>
     <div v-if="diagAP" class="q-my-xs msg q-ml-lg">
       {{ $t('LOGapdiag_' + diagAP)}}</div>
@@ -79,6 +79,7 @@ import { type ICVS } from '../stores/safe-store'
 const sf = stores.safe
 const ui = stores.ui
 const session = stores.session
+const starter = stores.starter
 
 const trustingsCached: Ref<Trusting[]> = ref([])
 
@@ -110,7 +111,7 @@ const selectedUserpl: Ref<Trusting> = ref()
 const mayPlane = computed(() => 
   session.noNet && session.hasLocal && trustingsCached.value.length)
 const mayPin = computed(() => 
-  session.hasNet && session.hasLocal && sf.trustings.size)
+  starter.hasNet && session.hasLocal && sf.trustings.size)
 
 const preselect = () => {
   const x = trustingsCached.value
@@ -127,7 +128,7 @@ const preselect = () => {
 
 preselect()
 
-watch(() => session.hasNet, () => {
+watch(() => starter.hasNet, () => {
   preselect()
 })
 

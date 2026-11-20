@@ -87,7 +87,7 @@ onMounted (async () => {
     - aux stores statiques et créer des stores dynamiques
     - aux injections appConfig, $t, $q et I18n
   */
-  
+  await starter.getSubsToken()
   await sleep(300) // facultatif pour avoir le temps de voir l'animation du splash
   
   /* Déclenche l'affichage de la "home page" de l'application 

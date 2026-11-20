@@ -1,9 +1,9 @@
 <template>
 <div>
 <div v-if="ui.appPage.tab === 'auteurs'" class="column items-center">
-  <q-splitter v-model="splitterModel" horizontal class="pwsm" :style="sth">
+  <q-splitter v-model="splitterModel" horizontal class="mwsm" :style="sth">
     <template v-slot:before>
-      <div v-if="session.hasNet" v-for="([, c], idx) in creds" :key="c.credId"
+      <div v-if="starter.hasNet" v-for="([, c], idx) in creds" :key="c.credId"
         :class="'cursor-pointer q-my-sm select ' + dkli(idx)"
         @click="select(c)">
         <div>
@@ -38,7 +38,7 @@
     <template v-slot:after>
     <div style="position:relative;" class="q-mt-md">
       <div v-if="cred">
-      <div v-if="session.hasNet" class="row">
+      <div v-if="starter.hasNet" class="row">
         <div class="col-5 text-italic">{{ $t('AUTcol_trig') }}</div>
         <div class="col-7 q-pl-sm ">
           <line-edit :text="cred.props.trig || $t('AUTnotrig')"
@@ -83,7 +83,7 @@
             <div class="col-5">{{ $t('AUTcol_sec') }}</div>
             <div class="col-7 q-pl-sm">{{ aut.section + ' - ' + lbls(aut.section)}}</div>
           </div>
-          <div v-if="session.hasNet" class="row">
+          <div v-if="starter.hasNet" class="row">
             <div class="col-5">{{ $t('AUTcol_co', coauts.length) }}</div>
             <div class="col-7 row q-gutter-md q-pl-sm">
               <div v-for="cx in coauts" :key="cx.credId" @click="selCo(cx)"
@@ -110,15 +110,15 @@
   <q-page-sticky position="top-left" :offset="[7, 7]">
     <q-toolbar :class="sty()">
       <nav-bar2 v-model="ui.navBar" @navigate="navigate"/>
-      <btn-cond v-if="session.hasNet && !ui.navBar.editing && !ui.navBar.disable"
+      <btn-cond v-if="starter.hasNet && !ui.navBar.editing && !ui.navBar.disable"
         class="col-auto q-ml-xs" icon="add" round @ok="add"/>
-      <btn-cond v-if="session.hasNet && ui.navBar.editing && !ui.navBar.disable"
+      <btn-cond v-if="starter.hasNet && ui.navBar.editing && !ui.navBar.disable"
         class="col-auto q-ml-xs" icon="edit_off" round @ok="resetEdit"/>
-      <btn-cond v-if="session.hasNet && !ui.navBar.editing && ui.navBar.nb && !ui.navBar.disable"
+      <btn-cond v-if="starter.hasNet && !ui.navBar.editing && ui.navBar.nb && !ui.navBar.disable"
         class="col-auto q-ml-xs" icon="edit" round @ok="edit"/>
-      <btn-cond v-if="session.hasNet && ui.navBar.editing && ui.navBar.changes.size && !ui.navBar.disable"
+      <btn-cond v-if="starter.hasNet && ui.navBar.editing && ui.navBar.changes.size && !ui.navBar.disable"
         class="col-auto q-ml-xs" icon="undo" round @ok="undo"/>
-      <btn-cond v-if="session.hasNet && ui.navBar.editing && ui.navBar.changes.size && !ui.navBar.disable"
+      <btn-cond v-if="starter.hasNet && ui.navBar.editing && ui.navBar.changes.size && !ui.navBar.disable"
         class="col-auto q-ml-xs" icon="check" round @ok="val"/>
     </q-toolbar>
   </q-page-sticky>
@@ -145,6 +145,7 @@ import { Operation, DocEnums } from '../src-fw/operation'
 import { $t } from '../starter/util'
 const ui = stores.ui
 const session = stores.session
+const starter = stores.starter
 const sf = stores.safe
 
 const sth = computed(() => 'height:' + (ui.appPage.height - 30) + 'px;' )
@@ -187,7 +188,7 @@ const coauts: Ref<EmbedCred[]> = computed(() => {
 })
 
 const init = async () => {
-  if (session.hasNet) {
+  if (starter.hasNet) {
     creds.value = await sf.myFullCreds('AS2', '', 'Auteur')
     // console.log(creds.value.size)
   } else {

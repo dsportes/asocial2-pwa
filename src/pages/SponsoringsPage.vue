@@ -2,7 +2,7 @@
 <div>
   <div class="column items-center q-pa-sm">
 
-    <div v-if="!ui.currentForm.zoomed" class="pwmd">
+    <div v-if="!ui.currentForm.zoomed" class="mwmd">
       <div v-if="forms.length">
         <div v-for="(form, idx) in forms" :key="form.formId"
           :class="clcase(form, idx) + ' q-my-sm full-width cursor-pointer select'"
@@ -34,7 +34,7 @@
       <div v-else class="titre-md text-italic">{{ $t('FORMnoforms') }}</div>
     </div>
 
-    <div v-else class="pwmd">
+    <div v-else class="mwmd">
       <form-zoom v-if="fctx" v-model="fctx" @done="onDone"/>
     </div>
 

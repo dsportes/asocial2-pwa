@@ -40,7 +40,7 @@ const props = defineProps<{
   ctx?: any
 }>()
 
-const session = stores.session
+const starter = stores.starter
 
 // Emet 2 arguments: SOA (ou null), ctx (ou null)
 const emit = defineEmits(['select'])
@@ -60,7 +60,7 @@ const selOrg = (x: string) => {
 }
 
 const ok = async () => {
-  if (session.hasNet) {
+  if (starter.hasNet) {
     const site = await getSite(svc.value.svc, org.value)
     if (site) {
       const soa : SOA = {

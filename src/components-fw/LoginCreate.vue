@@ -8,11 +8,11 @@
   </q-toolbar>
 
   <div class="column items-center">
-    <select-site class="pwxxs q-my-md" v-if="adm" v-model="site"/>
-    <input-a v-if="!adm || site" class="pwsm q-my-md"
+    <select-site class="mwxxs q-my-md" v-if="adm" v-model="site"/>
+    <input-a v-if="!adm || site" class="mwsm q-my-md"
       :prefix="adm ? 'LOGcreate_pwd' : 'LOGcreate_inv'" 
       size="ps" v-model="invitCode" @validate="onCode"/>
-    <div class="pwxs font-mono q-my-sm">{{ userId }}</div>
+    <div class="mwxs font-mono q-my-sm">{{ userId }}</div>
   </div>
 
   <safe-cr v-if="dialogs.create" v-model="dialogs.create"

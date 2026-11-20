@@ -114,7 +114,7 @@ export function dkli (idx: number | undefined) {
 export function sty (sz?: string) {
   const d = starter.isDark
   if (!sz) return d ? 'dark ' : 'clear '
-  return (d ? 'dark bsfdark pw' : 'clear bsclear pw') + sz
+  return (d ? 'dark bsfdark mw' : 'clear bsclear mw') + sz
 }
 
 export function asty () {

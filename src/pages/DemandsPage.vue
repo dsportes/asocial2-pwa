@@ -1,6 +1,6 @@
 <template>
 <div class="column items-center">
-<div class="pwmd">
+<div class="mwmd">
   <div v-if="!ui.currentEvent.zoomed && !ui.currentForm.increation" class="full-width">
 
     <div v-if="!events.length" class="titre-md text-italic q-pa-md">{{ $t('FORMnoevents') }}</div>
@@ -32,7 +32,7 @@
     </div>
   </div>
 
-  <div v-if="ui.currentEvent.zoomed" class="pwmd q-pt-sm">
+  <div v-if="ui.currentEvent.zoomed" class="mwmd q-pt-sm">
     <form-zoom v-if="fctx" v-model="fctx" @done="onDone"/>
   </div>
 </div>

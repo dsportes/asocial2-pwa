@@ -36,8 +36,7 @@ const locales:any = { fr: langFr, en: langEn }
 for (const lo of appConfig.LANGOPTIONS) if (lo.value !== 'en') (lo as any)['props'] = locales[lo.value]
 
 /* CUSTOM: importer les scripts de traduction des langues de l'application.
-  Par convention dans /src/i18n/...
-*/
+  Par convention dans /src/i18n/... */
 import { enMsg } from './i18n/en'
 import { frMsg } from './i18n/fr'
 const messages: any = { en: enMsg, fr: frMsg }

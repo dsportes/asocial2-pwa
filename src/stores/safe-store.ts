@@ -3,11 +3,11 @@ import { defineStore } from 'pinia'
 import { encode, decode } from '@msgpack/msgpack'
 
 import stores from '../starter/allstores'
-import { quarter } from '../src-fw/util'
+import { quarter, equ8 } from '../src-fw/util'
 import { AppExc } from '../src-fw/base'
 
 import { SafeOperation, MDOperation, Operation, AOperation } from '../src-fw/operation'
-import { Crypt } from '../src-fw/crypt'
+import { Crypt, rawToDer, derToRaw } from '../src-fw/crypt'
 import { IDBsafe, Trusting } from '../src-fw/idbsafe'
 import { keyToB64, keyFromB64 } from '../starter/util'
 import { $Credential } from '../src-fw/documents'
@@ -1123,8 +1123,13 @@ export const useSafeStore = defineStore('safe', () => {
     const signEC = await Crypt.sign(kpsv.priv, pincx)
     // On enregistre la version ASN1 de la signature
     // Peut être vérifiée par Safe en PHP
-    const asn1 = Crypt.signToAsn1(signEC)
-    const sign = keyToB64(asn1)
+    const der = rawToDer(signEC) // -> ASN-1
+    /* Pour vérification der <-> raw
+    const raw = derToRaw(der, 66) // -> WebCrypto - 66 pour P-521
+    if (!equ8(raw, signEC))
+      throw new AppExc(3, 'bug_signature', 'setTrust-asn1')
+    */
+    const sign = keyToB64(der)
     const Va = keyToB64(kpsv.pub)
 
     const shK = await shKeyK()
@@ -1138,21 +1143,17 @@ export const useSafeStore = defineStore('safe', () => {
     }
 
     let oksign = false
-    {
+    { // Vérification que la signature fonctionne
       const pincx: string = await Crypt.strongHash(pin + '/' + t.cx, false, false) as string
-      console.log('PINCX !!!!!!!!!!!!!!!!!!!!!!!!!! ', pincx)
       if (pincx !== pincxb64)
         throw new AppExc(3, 'bug_signature', 'setTrust-pincx')
       // vérifie par `Va` que `sign` est bien la signature de pincx
       const V = keyFromB64(trustDev.Va)
       // Rétablit la signature en EC - ce que ne fait pas la version PHP
-      const asn1 = keyFromB64(trustDev.sign)
-      const sign2 = Crypt.signFromAsn1(asn1)
-      const signb64 = keyToB64(sign2)
-      if ( sign !== signb64)
-        throw new AppExc(3, 'bug_signature', 'setTrust-sign')
+      const der = keyFromB64(trustDev.sign)
+      const raw = derToRaw(der, 66)
       const pcb = keyFromB64(pincx)
-      oksign = await Crypt.verify(V, sign2, pcb)
+      oksign = await Crypt.verify(V, raw, pcb)
       if (!oksign)
         throw new AppExc(3, 'bug_signature', 'setTrust-verify')
     }

@@ -1,6 +1,6 @@
 <template>
 <div class="column items-center">
-<div class="pwmd" style="position:relative">
+<div class="mwmd" style="position:relative">
   <q-splitter v-model="splitterModel" horizontal 
     :style="sth">
     <template v-slot:before>

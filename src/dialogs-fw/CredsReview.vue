@@ -16,7 +16,7 @@
     <template #hdr>
     <div :class="sty()">
       <div class="column items-center">
-        <scroll-area v-if="svcOrgs.length" size="sm" class="pwsm q-mt-sm q-pa-xs">
+        <scroll-area v-if="svcOrgs.length" size="sm" class="mwsm q-mt-sm q-pa-xs">
           <div v-for="(x, idx) in svcOrgs" :key="x.svc + '/' + x.org" class="row items-center">
             <div :class="'full-width ' + dkli(idx) + curSty(x)">
               <div class="col-11 row cursor-pointer select q-my-xs" @click="selectSo(x)">
