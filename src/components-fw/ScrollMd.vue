@@ -39,7 +39,7 @@ const thumbStyle = { borderRadius: '5px', backgroundColor: '#027be3', width: '5p
 const barStyle = { borderRadius: '9px', backgroundColor: '#027be3', width: '9px', opacity: '0.2' }
 
 const url = (appConfig.DOC_URLS as any)[appConfig.LANG]
-const ui = stores.ui
+const starter = stores.starter
 
 const props = defineProps<{
   inverse?: boolean,
@@ -51,7 +51,7 @@ const text2 = () => {
   return props.text ? props.text.replaceAll('href="$$/', 'href="' + url) : ''
 }
 
-const dark = ref(ui.$q.dark.isActive && !props.inverse)
+const dark = ref(starter.isDark && !props.inverse)
 
 </script>
 

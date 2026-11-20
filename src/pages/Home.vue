@@ -137,7 +137,9 @@ import { AS2CredentialsReport } from '../as2/credentials'
 import { FWreport } from '../src-fw/fwdocuments'
 
 // import { appConfig } from '../app/config'
-// import { $t } from '../starter/util'
+import { $t } from '../starter/util'
+
+console.log($t('hello'), $t('world'))
 
 const hdrPages = ref(new Set(['test']))
 

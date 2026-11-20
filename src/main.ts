@@ -49,6 +49,7 @@ const i18n = createI18n({
   fallbackLocale: appConfig.LANG,
   missingWarn: false,
   fallbackWarn: false,
+  warnHtmlMessage: false,
   messages
 })
 
