@@ -46,7 +46,7 @@ import LineEdit from '../components-fw/LineEdit.vue'
 import BtnCond from '../components-fw/BtnCond.vue'
 import FormExp from '../components-fw/FormExp.vue'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const props = defineProps<{
   type: string,

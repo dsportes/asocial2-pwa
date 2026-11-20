@@ -34,7 +34,7 @@ import InputA from '../components-fw/InputA.vue'
 import { type SOA } from '../src-fw/base'
 import { getSiteStatus, setSiteStatus, type ADMIN$Status } from '../src-fw/operation'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const so = defineModel<SOA>()
 

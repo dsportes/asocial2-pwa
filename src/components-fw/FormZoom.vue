@@ -149,7 +149,7 @@ import FormEtc from '../components/FormEtc.vue'
 import DialogStd0 from '../dialogs-fw/DialogStd0.vue'
 import { type FormCtx } from '../src-fw/documents'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const stic = ['add', 'person', 'local_police', 'check', 'close']
 const stclr = ['primary', 'warning', 'warning', 'green-5', 'negative']

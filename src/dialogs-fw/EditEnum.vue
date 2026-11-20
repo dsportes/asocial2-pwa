@@ -48,13 +48,13 @@
 import { ref, type Ref, computed, watch, onMounted, inject } from 'vue'
 import { type CodeLabel } from '../src-fw/base'
 import stores from '../starter/allstores'
-import { hasMessage, dkli } from '../src-fw/util'
+import { dkli } from '../src-fw/util'
 import BtnCond from '../components-fw/BtnCond.vue'
 import { DocEnums } from '../src-fw/operation'
 import LineEdit from '../components-fw/LineEdit.vue'
 import DialogStd0 from '../dialogs-fw/DialogStd0.vue'
 
-const $t = inject('$t') as Function
+import { $t, hasMessage } from '../starter/util'
 const ui = stores.ui
 
 const model = defineModel<boolean>()

@@ -32,7 +32,7 @@
 import { type Ref, ref, inject } from 'vue'
 import { FormType } from '../src-fw/descriptor'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 type Categ = {
   label: string

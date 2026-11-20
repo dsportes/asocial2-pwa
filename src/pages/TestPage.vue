@@ -29,7 +29,7 @@ import BtnCond from '../components-fw/BtnCond.vue'
 import SelectCode from '../dialogs-fw/SelectCode.vue'
 import stores from '../starter/allstores'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const encoder = new TextEncoder()
 

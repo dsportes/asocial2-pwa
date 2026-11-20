@@ -9,6 +9,8 @@ export const frMsg = {
   later: 'Plus tard',
   pleasewait: 'Merci d\'attentre quelques secondes ...',
 
+  quoi: 'Quoi ${0} ???',
+
   reload:  'Rechargement de l\'application, merci d\'attendre un peu...',
   coolbye: 'Au revoir et à bientôt !',
   backtoapp: 'Retour à l\'application',

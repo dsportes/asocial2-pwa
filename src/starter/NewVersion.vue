@@ -31,7 +31,7 @@ import { inject } from 'vue'
 import { reloadPage } from './util'
 import { useStarterStore } from './store'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 const starter = useStarterStore()
 
 </script>

@@ -38,13 +38,12 @@ Les customisations sont:
 </template>
 
 <script setup lang="ts" vapor>
-import { ref, type Ref, provide, computed, onMounted } from 'vue'
+import { ref, type Ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { appConfig } from './app/config'
 import { useStarterStore } from './starter/store'
-import { setupUtil, sleep } from './starter/util'
-import { setupUtilFW } from './src-fw/util'
+import { setupUtil, sleep, hasMessage } from './starter/util'
 
 import NewVersion from './starter/NewVersion.vue'
 import PermissionBox from './starter/PermissionBox.vue'
@@ -65,21 +64,15 @@ const bg = 'splash-' + (appConfig['DARK'] ? 'w' : 'b')
 const i18n = useI18n()
 const $q = useQuasar()
 const $t = i18n.t
-
-// Mise à dispositiion générale des vues et stores
-provide('i18n', i18n)
-provide('$t', $t)
-provide('$q', $q)
-
-// Acquisition du Store du starter et son initialisation
+// Acquisition du Store du starter
 const starter = useStarterStore()
-starter.init(i18n, $q)
 
 // Initialisation du module "util" du starter
-setupUtil(starter, $t)
+setupUtil(i18n, $q, $t, starter)
 
-// Initialisation du module "util" du FW
-setupUtilFW(i18n, $t, starter)
+starter.init()
+
+console.log(hasMessage('quoi'))
 
 /* Variables de contrôle d'ouverure des deux dialogues:
   - de demande de permissions de notification.

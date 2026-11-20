@@ -172,7 +172,7 @@ import { ListManagers, UpdateCredential } from '../src-fw/operations'
 
 import superman from '../assets/img/superman.jpg'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const ui = stores.ui
 const sf = stores.safe

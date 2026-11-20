@@ -45,7 +45,7 @@ import { sty } from '../src-fw/util'
 
 import superman from '../assets/img/superman.jpg'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const ui = stores.ui
 

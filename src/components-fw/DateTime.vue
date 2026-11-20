@@ -40,7 +40,7 @@
 <script setup lang="ts" vapor>
 import { ref, watch, inject } from 'vue'
 import BtnCond from '../components-fw/BtnCond.vue'
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const model = defineModel<string>()
 const emit = defineEmits(['ok']) 

@@ -48,7 +48,7 @@ import stores from '../starter/allstores'
 import FormInp from './FormInp.vue'
 import FormEnum from './FormEnum.vue'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const fst = stores.form
 

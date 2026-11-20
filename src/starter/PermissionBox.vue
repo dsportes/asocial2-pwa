@@ -40,7 +40,7 @@ import { inject, computed, watch, onMounted} from 'vue'
 import { coolBye, reloadPage } from './util'
 import { useStarterStore } from './store'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 const starter = useStarterStore()
 const isPrompt = computed(() => starter.notificationAccess === 'prompt')
 

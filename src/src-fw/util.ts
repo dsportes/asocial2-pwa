@@ -1,28 +1,20 @@
-import { appConfig } from '../app/config'
+// import { appConfig } from '../app/config'
 import { keyFromB64 } from '../starter/util'
-import { messages } from '../main'
+
+import { $t, starter, /* i18n, $q */ } from '../starter/util'
 
 // @ts-expect-error
 import { gzip, ungzip } from './pako.mjs'
 
-export let $t: any
-export let i18n: any
-let starter: any
-export function setupUtilFW (_$t: any, _i18n: any, _starter: any ) { $t = _$t; i18n = _i18n; starter = _starter }
+let audioContext: AudioContext | undefined
+type Date3 = [number, number, number] // full year, mont, date
+let auj: Date3 = [0, 0, 0]
+let hier: Date3 = [0, 0, 0]
 
 export function gzipT (data: Uint8Array) : Uint8Array | undefined { return gzip(data) }
 
 export function ungzipT (data: Uint8Array) { return ungzip(data) }
 
-export function hasMessage (code: string) : string {
-  for (const opt of appConfig.LANGOPTIONS) {
-    const mx = messages[opt.value]
-    if (mx && mx[code]) return mx[code]
-  }
-  return ''
-}
-
-let audioContext: AudioContext | null = null
 export async function beep (son: string) {
   if (!audioContext) audioContext = new AudioContext()
   const b64 = son.substring(son.indexOf(',') + 1)
@@ -50,9 +42,6 @@ export function quarter (d: Date) {
   const q = Math.floor(d.getUTCMonth() / 4)
   return (y * 4) + q
 }
-
-type Date3 = [number, number, number] // full year, mont, date
-let auj: Date3 = [0, 0, 0], hier: Date3 = [0, 0, 0]
 
 export function zp (n: number) { return n > 9 ? '' + n: '0' + n }
 
@@ -116,8 +105,6 @@ export function dhstring (t: Date | number) {
   return d.toISOString()
   // return aaaammjj(d) + ' ' + hms(d, sec)
 }
-
-const encoder = new TextEncoder()
 
 export function dkli (idx: number | undefined) {
   const d = starter.isDark

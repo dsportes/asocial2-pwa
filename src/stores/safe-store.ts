@@ -184,7 +184,6 @@ const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 
 export const useSafeStore = defineStore('safe', () => {
-  const $t = inject('$t') as Function
 
   /* Contenu en Safe Box de la base locale IDB ***********************************************/
   const devId = ref('')

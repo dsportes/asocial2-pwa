@@ -153,7 +153,7 @@ import SelectOptionsdial from '../dialogs-fw/SelectOptionsdial.vue'
 import skull from '../assets/skull.png'
 import safebox from '../assets/safe-box.png'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 const ui = stores.ui
 const session = stores.session
 const sf = stores.safe

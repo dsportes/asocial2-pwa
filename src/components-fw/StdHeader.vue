@@ -20,7 +20,7 @@ import BtnBubble from '../components-fw/BtnBubble.vue'
 import BtnMenu from '../components-fw/BtnMenu.vue'
 import BtnMode from '../components-fw/BtnMode.vue'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const ui = stores.ui
 const session = stores.session

@@ -35,7 +35,7 @@ import BtnCond from '../components-fw/BtnCond.vue'
 import { type LangOption } from '../starter/store'
 import { appConfig } from '../app/config.ts'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const session = stores.session
 const starter = stores.starter

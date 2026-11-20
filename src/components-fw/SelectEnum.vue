@@ -14,7 +14,7 @@
 <script setup lang="ts" vapor>
 import { ref, type Ref, onMounted, watch } from 'vue'
 import { DocEnums } from '../src-fw/operation'
-import { hasMessage } from '../src-fw/util'
+import { hasMessage } from '../starter/util'
 import { type CodeLabel } from '../src-fw/base'
 
 const props = defineProps<{

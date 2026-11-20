@@ -38,7 +38,7 @@ import { ref, computed, inject } from 'vue'
 import stores from '../starter/allstores'
 import SelmultiEnum from '../components-fw/SelmultiEnum.vue'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const ui = stores.ui
 const session = stores.session

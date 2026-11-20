@@ -49,7 +49,7 @@ import { $Form, $MDEvent } from '../src-fw/documents'
 import ScrollMd from '../components-fw/ScrollMd.vue'
 import FormZoom from '../components-fw/FormZoom.vue'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const stic = ['add', 'person', 'local_police', 'check', 'close']
 const stclr = ['', 'warning', 'warning', 'green-5', 'negative']

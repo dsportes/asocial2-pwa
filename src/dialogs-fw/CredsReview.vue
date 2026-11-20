@@ -87,7 +87,7 @@
 <script setup lang="ts" vapor>
 import { ref, type Ref, watch, computed, inject } from 'vue'
 
-import { $t, sty, dkli } from '../src-fw/util'
+import { sty, dkli } from '../src-fw/util'
 import stores from '../starter/allstores'
 import { AutoRevokeCred } from '../src-fw/operations'
 import { $Credential } from '../src-fw/documents'
@@ -100,7 +100,7 @@ import { GetCredProps } from '../src-fw/operations'
 import DialogStd2 from '../dialogs-fw/DialogStd2.vue'
 // import { appConfig } from '../app/config'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const sf = stores.safe
 const ui = stores.ui

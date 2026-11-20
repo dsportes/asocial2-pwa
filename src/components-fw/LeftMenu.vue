@@ -82,7 +82,7 @@ import superman from '../assets/img/superman.jpg'
 import invitation from '../assets/invitation.png'
 // import { appConfig } from '../app/config'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const sf = stores.safe
 const ui = stores.ui

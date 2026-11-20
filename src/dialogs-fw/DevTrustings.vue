@@ -46,7 +46,7 @@ import BtnBubble from '../components-fw/BtnBubble.vue'
 import ScrollArea from '../components-fw/ScrollArea.vue'
 import { sty, dkli } from '../src-fw/util'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const ui = stores.ui
 const sf = stores.safe

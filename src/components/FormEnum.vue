@@ -39,7 +39,7 @@ import { DocEnums } from '../src-fw/operation.ts'
 
 import SelectEnum from '../components-fw/SelectEnum.vue'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const props = defineProps<{
   type: string,

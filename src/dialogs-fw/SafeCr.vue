@@ -92,7 +92,7 @@ Events: close done
 import { ref, type Ref, reactive, watch, computed, inject } from 'vue'
 
 import stores from '../starter/allstores'
-import { $t, sty } from '../src-fw/util'
+import { sty } from '../src-fw/util'
 import { Crypt } from '../src-fw/crypt'
 
 import SafestoreSelect from '../components-fw/SafestoreSelect.vue'
@@ -103,7 +103,7 @@ import InputB from '../components-fw/InputB.vue'
 import ChooseIt from '../dialogs-fw/ChooseIt.vue'
 import DialogStd2 from '../dialogs-fw/DialogStd2.vue'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const sf = stores.safe
 const ui = stores.ui

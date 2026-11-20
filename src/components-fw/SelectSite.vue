@@ -14,7 +14,7 @@ import { AOperation } from '../src-fw/operation'
 import stores from '../starter/allstores'
 
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 const ui = stores.ui
 
 const idc = ref(ui.idc())

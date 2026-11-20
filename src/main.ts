@@ -40,7 +40,7 @@ for (const lo of appConfig.LANGOPTIONS) if (lo.value !== 'en') (lo as any)['prop
 */
 import { enMsg } from './i18n/en'
 import { frMsg } from './i18n/fr'
-export const messages: any = { en: enMsg, fr: frMsg }
+const messages: any = { en: enMsg, fr: frMsg }
 
 /* Configuration de I18n selon les langues de l'application */
 const i18n = createI18n({

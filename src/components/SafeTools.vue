@@ -154,7 +154,7 @@ import skull from '../assets/skull.png'
 import safebox from '../assets/safe-box.png'
 // import { appConfig } from '../app/config'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const ui = stores.ui
 const session = stores.session

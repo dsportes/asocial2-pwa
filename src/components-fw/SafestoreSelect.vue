@@ -30,7 +30,7 @@ import BtnBubble from '../components-fw/BtnBubble.vue'
 import SelectSite from '../components-fw/SelectSite.vue'
 import { pingStore } from '../src-fw/operation'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 const exp = ref(false)
 const def: string = $t('SECsite_std')
 

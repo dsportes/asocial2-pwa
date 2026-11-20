@@ -2,6 +2,7 @@ import { ref, computed, reactive, type Ref, inject } from 'vue'
 import { defineStore } from 'pinia'
 
 // import { appConfig } from '../app/config'
+import { $t, $q } from '../starter/util'
 import { hasPage } from '../src-fw/help'
 import { type SOA } from '../src-fw/base'
 import { useSessionStore } from '../stores/session-store'
@@ -29,8 +30,6 @@ export type NavBar = {
 }
 
 export const useUiStore = defineStore('ui', () => {
-  const $t = inject('$t') as Function
-  const $q = inject('$q') as any
 
   const leftMenu = ref(false)
   const closeMenu = () => {

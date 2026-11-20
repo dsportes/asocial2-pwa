@@ -61,7 +61,7 @@ import { type SOA } from '../src-fw/base'
 import { $Form, type FormCtx } from '../src-fw/documents'
 
 import superman from '../assets/img/superman.jpg'
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const ui = stores.ui
 const fst = stores.form

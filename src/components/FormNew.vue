@@ -37,7 +37,7 @@ import { FormType } from '../src-fw/descriptor'
 import InputB from '../components-fw/InputB.vue'
 import BtnCond from '../components-fw/BtnCond.vue'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const encoder = new TextEncoder()
 

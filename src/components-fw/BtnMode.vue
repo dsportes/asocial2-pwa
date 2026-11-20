@@ -39,7 +39,7 @@ import { ref, computed, inject } from 'vue'
 import BtnCond from './BtnCond.vue'
 import NetStatus from './NetStatus.vue'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const icons = ['', 'cloud_sync', 'cloud', 'flight', 'calculate']
 

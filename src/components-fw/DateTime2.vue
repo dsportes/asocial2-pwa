@@ -32,7 +32,7 @@ import { type StartEnd } from '../src-fw/base'
 import BtnCond from './BtnCond.vue'
 import DateTime from './DateTime.vue'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 const model = defineModel<StartEnd>()
 const emit = defineEmits(['ok']) 
 const props = defineProps<{

@@ -32,8 +32,9 @@
 <script setup lang="ts" vapor>
 import { ref, type Ref, onMounted, watch, computed } from 'vue'
 import { DocEnums } from '../src-fw/operation'
-import { hasMessage, eqNumberA } from '../src-fw/util'
+import { eqNumberA } from '../src-fw/util'
 import { type CodeLabel } from '../src-fw/base'
+import { hasMessage } from '../starter/util'
 
 const MAXV = 3
 

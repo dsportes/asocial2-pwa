@@ -42,7 +42,7 @@ import EditEnum from '../dialogs-fw/EditEnum.vue'
 import SelectEnum from '../components-fw/SelectEnum.vue'
 import BtnCond from '../components-fw/BtnCond.vue'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const ui = stores.ui
 const sf = stores.safe

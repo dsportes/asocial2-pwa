@@ -52,7 +52,7 @@ import { volumeIDB } from '../src-fw/idb'
 import { IDBsafe } from '../src-fw/idbsafe'
 // import { appConfig } from '../app/config'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 const sf = stores.safe
 
 const model = defineModel<boolean>()

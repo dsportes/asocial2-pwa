@@ -3,7 +3,7 @@ import { AppExc } from '../src-fw/base'
 import { Registry } from '../src-fw/registry'
 
 import stores from '../starter/allstores'
-import { $t } from '../src-fw/util'
+import { $t } from '../starter/util'
 import { $Credential} from '../src-fw/documents'
 import { $Perimeter } from '../src-fw/subscription'
 

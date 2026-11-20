@@ -48,7 +48,7 @@ import FormNew from '../components/FormNew.vue'
 import SelectSvcorg from '../components-fw/SelectSvcorg.vue'
 import { type SOA } from '../src-fw/base'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 const ui = stores.ui
 
 const fst = stores.form

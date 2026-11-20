@@ -58,7 +58,7 @@ import { isMDAdmin } from '../src-fw/operation'
 import { $Credential } from '../src-fw/documents'
 // import { appConfig } from '../app/config'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 const sf = stores.safe
 const ui = stores.ui
 

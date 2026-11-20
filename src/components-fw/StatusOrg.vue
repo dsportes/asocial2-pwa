@@ -37,7 +37,7 @@ import { type ADMIN$Status } from '../src-fw/operation'
 import { type SOA } from '../src-fw/base'
 import { FW$getStatus, FW$setStatus } from '../src-fw/operations'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 const so = defineModel<SOA>()
 
 const setstat = ref(false)

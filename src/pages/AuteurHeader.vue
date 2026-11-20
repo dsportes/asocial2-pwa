@@ -21,7 +21,7 @@ import stores from '../starter/allstores'
 import StdHeader from '../components-fw/StdHeader.vue'
 import BtnBubble from '../components-fw/BtnBubble.vue'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 const ui = stores.ui
 
 </script>

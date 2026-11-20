@@ -3,7 +3,7 @@ import { Registry } from '../src-fw/registry'
 import { $Form, $CredTempl } from '../src-fw/documents'
 import { FormType } from '../src-fw/descriptor'
 import d from './descriptors'
-import { $t } from '../src-fw/util'
+import { $t } from '../starter/util'
 import { Crypt } from '../src-fw/crypt'
 import { AS2$Auteur } from './documents'
 

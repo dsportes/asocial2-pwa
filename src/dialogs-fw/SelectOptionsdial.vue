@@ -17,13 +17,12 @@
 <script setup lang="ts" vapor>
 import { inject } from 'vue'
 import stores from '../starter/allstores'
-import { $t } from '../src-fw/util'
 import BtnCond from '../components-fw/BtnCond.vue'
 import DialogStd0 from '../dialogs-fw/DialogStd0.vue'
 import SelectOptions from '../components-fw/SelectOptions.vue'
 // import { appConfig } from '../app/config'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 const session = stores.session
 const ui = stores.ui
 

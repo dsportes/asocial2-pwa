@@ -80,7 +80,6 @@
     </transition>
   </q-page-container>
 
-  <permission-box v-if="session.permDialog"/>
   <got-it/>
   <confirm-quit/>
   <confirm-close/>
@@ -94,14 +93,11 @@
 </template>
 
 <script setup lang="ts" vapor>
-import { ref, watchEffect, onMounted, inject } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { useQuasar } from 'quasar'
+import { ref, onMounted } from 'vue'
 
 import stores from '../starter/allstores'
 
 import { sty } from '../src-fw/util'
-import { keyFromB64, fromUrl } from '../starter/util'
 
 import StdHeader from '../components-fw/StdHeader.vue'
 import SafeHeader from './SafeHeader.vue'
@@ -141,7 +137,7 @@ import { AS2CredentialsReport } from '../as2/credentials'
 import { FWreport } from '../src-fw/fwdocuments'
 
 // import { appConfig } from '../app/config'
-// const $t = inject('$t') as Function
+// import { $t } from '../starter/util'
 
 const hdrPages = ref(new Set(['test']))
 

@@ -17,7 +17,7 @@ import { type LabelSvc } from '../src-fw/base'
 import { AOperation } from '../src-fw/operation'
 import { appConfig } from '../app/config'
 
-// const $t = inject('$t') as Function
+// import { $t } from '../starter/util'
 const session = stores.session
 
 const model = defineModel<LabelSvc>() // { label: string, svc: string }

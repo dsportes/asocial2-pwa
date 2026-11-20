@@ -50,7 +50,7 @@ import { computed, inject } from 'vue'
 
 import stores from '../starter/allstores'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const icons = ['close', 'check_circle', 'visibility', 'block']
 const colors = ['negative', 'green-5', 'green-5', 'warning']

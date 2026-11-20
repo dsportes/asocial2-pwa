@@ -48,12 +48,11 @@ Commentaires dans Input-B.
 <script setup lang="ts" vapor>
 import { ref, computed, watch, inject } from 'vue'
 import stores from '../starter/allstores'
-import { hasMessage } from '../src-fw/util'
 import BtnCond from '../components-fw/BtnCond.vue'
 import BtnBubble from '../components-fw/BtnBubble.vue'
 import { appConfig } from '../app/config'
 
-const $t = inject('$t') as Function
+import { $t, hasMessage } from '../starter/util'
 const ui = stores.ui
 
 const model = defineModel<string>() // Dans le script accessible par model.value

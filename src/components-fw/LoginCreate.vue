@@ -34,7 +34,7 @@ import { AdminOperation } from '../src-fw/operation'
 
 import SafeCr from '../dialogs-fw/SafeCr.vue'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const sf = stores.safe
 const ui = stores.ui

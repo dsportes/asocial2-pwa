@@ -1,7 +1,6 @@
 import { encode, decode } from '@msgpack/msgpack'
 
 import { appConfig } from '../app/config'
-import { $t, hasMessage } from '../src-fw/util'
 import { AppExc, type CodeLabel, logexc } from './base'
 import { Descriptor } from '../src-fw/descriptor'
 
@@ -11,6 +10,7 @@ import { Crypt } from '../src-fw/crypt'
 import { keyFromB64 } from '../starter/util'
 import { $Credential } from '../src-fw/documents'
 import { idb } from '../src-fw/idb'
+import { $t, hasMessage } from '../starter/util'
 
 const encoder = new TextEncoder()
 

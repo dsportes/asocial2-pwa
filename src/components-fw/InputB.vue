@@ -102,12 +102,11 @@ En cas d'usage de "fncheck", les valeurs retournées doivent avoir une traductio
 import { ref, computed, watch, inject } from 'vue'
 import stores from '../starter/allstores'
 import { type InputE } from '../src-fw/base'
-import { hasMessage } from '../src-fw/util'
 import BtnCond from '../components-fw/BtnCond.vue'
 import BtnBubble from '../components-fw/BtnBubble.vue'
 import { appConfig } from '../app/config'
 
-const $t = inject('$t') as Function
+import { $t, hasMessage } from '../starter/util'
 const ui = stores.ui
 
 const model = defineModel<InputE>() // Dans le script accessible par model.value

@@ -38,7 +38,7 @@ import { checkStatus } from '../src-fw/operation'
 import { dkli } from '../src-fw/util.js'
 // import { appConfig } from '../app/config'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 type Org = {
   org: string
   sel: boolean

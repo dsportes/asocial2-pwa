@@ -142,7 +142,7 @@ import BtnBubble from '../components-fw/BtnBubble.vue'
 import LineEdit from '../components-fw/LineEdit.vue'
 import { Operation, DocEnums } from '../src-fw/operation'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 const ui = stores.ui
 const session = stores.session
 const sf = stores.safe

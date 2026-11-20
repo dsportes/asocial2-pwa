@@ -81,7 +81,7 @@ import HelpButton from './HelpButton.vue'
 // @ts-expect-error
 import EmojiSelect from '../dialogs-fw/EmojiSelect.vue'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const model = defineModel<string>()
 

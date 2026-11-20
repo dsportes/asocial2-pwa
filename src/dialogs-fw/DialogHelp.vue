@@ -121,7 +121,7 @@ import ShowHtml from '../components-fw/ShowHtml.vue'
 import SdNb from '../components-fw/SdNb.vue'
 import { appConfig } from '../app/config'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 const starter = stores.starter
 
 setPlan()

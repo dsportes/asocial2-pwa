@@ -5,8 +5,7 @@ import stores from '../starter/allstores'
 
 import { logexc } from '../src-fw/base'
 import { appConfig } from '../app/config'
-import { sleep } from '../starter/util'
-import { Crypt } from '../src-fw/crypt'
+import { $t } from '../starter/util'
 import { idb, IDB, type Prefs, deleteIDB, type StartPlane  } from '../src-fw/idb'
 import { $Def, $Perimeter, type $Perims, type $DefsXref, buildXref, $Subs } from '../src-fw/subscription'
 import { AOperation, checkStatus } from '../src-fw/operation'
@@ -20,7 +19,6 @@ export type EdPref = {
 }
 
 export const useSessionStore = defineStore('session', () => {
-  const $t = inject('$t') as Function
 
   /*
   0 : avant login

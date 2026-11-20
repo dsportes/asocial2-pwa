@@ -40,7 +40,7 @@ import SafeTools from '../components-fw/SafeTools.vue'
 import anonymous from '../assets/anonymous-w.svg'
 import flowers from '../assets/flowers.png'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const session = stores.session
 const ui = stores.ui

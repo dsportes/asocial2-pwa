@@ -100,7 +100,7 @@ import DialogStd2 from '../dialogs-fw/DialogStd2.vue'
 import DialogStd1 from '../dialogs-fw/DialogStd1.vue'
 // import { appConfig } from '../app/config'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const sf = stores.safe
 const ui = stores.ui

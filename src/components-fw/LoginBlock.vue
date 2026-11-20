@@ -63,10 +63,10 @@ Event émis: logged
 </template>
 
 <script setup lang="ts" vapor>
-import { ref, type Ref, reactive, computed, watch, onMounted, inject } from 'vue'
+import { ref, type Ref, reactive, computed, watch, onMounted } from 'vue'
 import stores from '../starter/allstores'
 import { IDBsafe } from '../src-fw/idbsafe'
-import { $t } from '../src-fw/util'
+import { $t } from '../starter/util'
 import BtnBubble from '../components-fw/BtnBubble.vue'
 import InputB from '../components-fw/InputB.vue'
 import { Crypt } from '../src-fw/crypt'

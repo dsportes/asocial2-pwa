@@ -53,13 +53,13 @@
 import { ref, computed, inject } from 'vue'
 
 import stores from '../starter/allstores'
-import { sty, hasMessage } from '../src-fw/util'
+import { sty } from '../src-fw/util'
 
 import BtnCond from '../components-fw/BtnCond.vue'
 import BtnBubble from '../components-fw/BtnBubble.vue'
 import SdNb from '../components-fw/SdNb.vue'
 
-const $t = inject('$t') as Function
+import { $t, hasMessage } from '../starter/util'
 
 /* code
 public code: number

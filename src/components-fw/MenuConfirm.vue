@@ -19,7 +19,7 @@
 <script setup lang="ts" vapor>
 import { ref, watch, inject } from 'vue'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 const code = defineModel<string>()
 
 const m = ref(true)

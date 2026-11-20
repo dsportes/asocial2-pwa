@@ -30,7 +30,7 @@
 
         <q-separator />
 
-        <q-item clickable dense v-close-popup @click="ui.setDark(!ui.isDark)">
+        <q-item clickable dense v-close-popup @click="starter.setDark(!starter.isDark)">
           <q-item-section avatar><q-avatar size="xl" icon="contrast"/></q-item-section>
           <q-item-section class="fs-lg">{{$t('darkclear')}}</q-item-section>
         </q-item>
@@ -383,7 +383,7 @@
 </template>
 
 <script setup lang="ts" vapor>
-import { ref, computed, reactive, watch, inject } from 'vue'
+import { ref, computed, reactive, watch } from 'vue'
 import { encode, decode } from '@msgpack/msgpack'
 
 import stores from '../starter/allstores'
@@ -409,7 +409,7 @@ import PrefEditor from '../components/PrefEditor.vue'
 import superman from '../assets/img/superman.jpg'
 import { appConfig } from '../app/config'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 const session = stores.session
 const sf = stores.safe
 const ui = stores.ui
@@ -475,8 +475,6 @@ const cl = (lg: LangOption) => starter.curLangOption.value === lg.value ? 'disab
 const choix = (lg: LangOption) : void => {
   starter.setLocale(lg.value)
 }
-
-ui.setDark(true)
 
 // @ts-expect-error
 const styd = (c: string) => 'background:' + appConfig.THEMES[c][0]

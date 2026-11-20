@@ -88,7 +88,7 @@ import stores from '../starter/allstores'
 import { logexc } from '../src-fw/base'
 import { type Auth, type MDuser } from '../stores/safe-store'
 import { Crypt } from '../src-fw/crypt'
-import { $t, quarter, readFile } from '../src-fw/util'
+import { quarter, readFile } from '../src-fw/util'
 import { keyToB64, keyFromB64 } from '../starter/util'
 import { type ICVS } from '../stores/safe-store'
 
@@ -100,7 +100,7 @@ import SafestoreSelect from '../components-fw/SafestoreSelect.vue'
 
 import DialogStd1 from '../dialogs-fw/DialogStd1.vue'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const encoder = new TextEncoder()
 

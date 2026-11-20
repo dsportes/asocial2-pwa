@@ -19,7 +19,7 @@ import 'emoji-mart-vue-fast/css/emoji-mart.css'
 import { Picker, EmojiIndex } from 'emoji-mart-vue-fast/src'
 
 import BtnCond from '../components-fw/BtnCond.vue'
-import { $t } from '../src-fw/util'
+import { $t } from '../starter/util'
 
 const i18 = () => { return {
     search: $t('EMOsearch1'),

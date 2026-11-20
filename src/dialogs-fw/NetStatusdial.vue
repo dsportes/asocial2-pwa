@@ -38,7 +38,7 @@ import { checkStatus } from '../src-fw/operation'
 import NetStatus from '../components-fw/NetStatus.vue'
 import BarOpen from '../components-fw/BarOpen.vue'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const session = stores.session
 const ui = stores.ui

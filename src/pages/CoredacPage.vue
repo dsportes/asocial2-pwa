@@ -75,7 +75,7 @@ import { Operation, DocEnums } from '../src-fw/operation'
 import { BasicCred, $Credential } from '../src-fw/documents'
 import { AS2$Auteur, AS2$EmbedCred } from '../as2/documents'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const ui = stores.ui
 const session = stores.session

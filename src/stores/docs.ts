@@ -9,6 +9,7 @@ import { type Ref, ref, reactive } from 'vue'
 import { defineStore } from 'pinia'
 import { encode, decode } from '@msgpack/msgpack'
 
+// import { $t } from '../starter/util'
 import { appConfig } from '../app/config'
 import stores from '../starter/allstores'
 import { useSessionStore } from '../stores/session-store'

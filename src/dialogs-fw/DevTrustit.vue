@@ -35,13 +35,13 @@
 import { ref, computed, watch, reactive, inject } from 'vue'
 
 import stores from '../starter/allstores'
-import { $t, sty } from '../src-fw/util'
+import { sty } from '../src-fw/util'
 import { Trusting } from '../src-fw/idbsafe'
 
 import BtnCond from '../components-fw/BtnCond.vue'
 import InputB from '../components-fw/InputB.vue'
 
-const $t = inject('$t') as Function
+import { $t } from '../starter/util'
 
 const ui = stores.ui
 const sf = stores.safe
