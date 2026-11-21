@@ -1,4 +1,4 @@
-import { ref, type Ref, computed, inject, watch, reactive, type Reactive } from 'vue'
+import { ref, type Ref, watch, reactive, type Reactive } from 'vue'
 import { usePermission, useWindowSize } from '@vueuse/core'
 import { defineStore } from 'pinia'
 
@@ -47,13 +47,6 @@ export const useStarterStore = defineStore('starter', () => {
 
   /* Largeur / hauteur de la windo (reactive) */
   const { width, height } = useWindowSize ()
-
-  /* PRIVATE : 
-  - myself est la référence au store lui-même depuis l'intérieur APRES init() 
-
-  let i18n:any, $t:Function, myself: any
-  /* $q DOIT être reactive: on pose un watch dessus pour la largeur et la hauteur */
-  // const $qR: Ref<any> = ref($q)
 
   /* SEMI-PRIVATE: invoquée uniquement dans App.vue dans son <script setup> */
   const init = () => {
@@ -218,7 +211,7 @@ export const useStarterStore = defineStore('starter', () => {
     // SEMI-PRIVATE
     init, 
     newVersionDialog, permDialog, notificationAccess, subsToken, 
-    onAppUpdate, // Hooks invoqués par register-sw
+    onAppUpdate, // Hook invoqué par register-sw
 
     curLangOption, setLang, 
     isDark, setDark, 

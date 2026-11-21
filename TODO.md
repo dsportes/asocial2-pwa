@@ -1,2 +1,2 @@
 
-sessionId à gérer
+sessionId à vérifier ?

@@ -43,7 +43,7 @@ import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { appConfig } from './app/config'
 import { useStarterStore } from './starter/store'
-import { setupUtil, sleep, hasMessage } from './starter/util'
+import { setupUtil, sleep } from './starter/util'
 
 import NewVersion from './starter/NewVersion.vue'
 import PermissionBox from './starter/PermissionBox.vue'
@@ -70,9 +70,8 @@ const starter = useStarterStore()
 // Initialisation du module "util" du starter
 setupUtil(i18n, $q, $t, starter)
 
+// APRES le setupUtil
 starter.init()
-
-console.log(hasMessage('quoi'))
 
 /* Variables de contrôle d'ouverure des deux dialogues:
   - de demande de permissions de notification.

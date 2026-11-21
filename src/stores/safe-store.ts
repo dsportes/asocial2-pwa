@@ -7,7 +7,7 @@ import { quarter, equ8 } from '../src-fw/util'
 import { AppExc } from '../src-fw/base'
 
 import { SafeOperation, MDOperation, Operation, AOperation } from '../src-fw/operation'
-import { Crypt, rawToDer, derToRaw } from '../src-fw/crypt'
+import { Crypt } from '../src-fw/crypt'
 import { IDBsafe, Trusting } from '../src-fw/idbsafe'
 import { keyToB64, keyFromB64 } from '../starter/util'
 import { $Credential } from '../src-fw/documents'
@@ -1121,11 +1121,11 @@ export const useSafeStore = defineStore('safe', () => {
     */
     const kpsv = await Crypt.getSVKeyPair()
     const signEC = await Crypt.sign(kpsv.priv, pincx)
-    // On enregistre la version ASN1 de la signature
+    // On enregistre la version ASN1 (der) de la signature
     // Peut être vérifiée par Safe en PHP
-    const der = rawToDer(signEC) // -> ASN-1
+    const der = Crypt.rawToDer(signEC) // -> ASN-1
     /* Pour vérification der <-> raw
-    const raw = derToRaw(der, 66) // -> WebCrypto - 66 pour P-521
+    const raw = Crypte.derToRaw(der, 66) // -> WebCrypto - 66 pour P-521
     if (!equ8(raw, signEC))
       throw new AppExc(3, 'bug_signature', 'setTrust-asn1')
     */
@@ -1142,8 +1142,8 @@ export const useSafeStore = defineStore('safe', () => {
       Va, cy, sign
     }
 
-    let oksign = false
-    { // Vérification que la signature fonctionne
+    /* Vérification que la signature fonctionne
+    {
       const pincx: string = await Crypt.strongHash(pin + '/' + t.cx, false, false) as string
       if (pincx !== pincxb64)
         throw new AppExc(3, 'bug_signature', 'setTrust-pincx')
@@ -1151,12 +1151,12 @@ export const useSafeStore = defineStore('safe', () => {
       const V = keyFromB64(trustDev.Va)
       // Rétablit la signature en EC - ce que ne fait pas la version PHP
       const der = keyFromB64(trustDev.sign)
-      const raw = derToRaw(der, 66)
+      const raw = Crypt.derToRaw(der, 66)
       const pcb = keyFromB64(pincx)
-      oksign = await Crypt.verify(V, raw, pcb)
-      if (!oksign)
+      if (!await Crypt.verify(V, raw, pcb))
         throw new AppExc(3, 'bug_signature', 'setTrust-verify')
     }
+    */
 
     const op = new SafeOperation('$TrustDevice', mySafeStore.value)
     let ret

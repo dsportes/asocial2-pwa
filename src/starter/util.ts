@@ -30,7 +30,6 @@ const appConfig: any = {}
 import { appConfig } from '../app/config'
 import { sha256 } from 'js-sha256'
 
-
 export let starter: any
 export let $t: Function
 export let i18n: any
