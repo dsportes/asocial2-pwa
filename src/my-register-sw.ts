@@ -11,6 +11,8 @@ autre service que ceux importés ci-après qui sont "neutres" (sans dépendances
 */
 
 import { register } from 'register-service-worker'
+import { decode } from '@msgpack/msgpack'
+import { keyFromB64 } from './starter/util'
 
 import { appConfig } from './app/config'
 const DEBUG = appConfig.DEBUG
@@ -66,6 +68,9 @@ navigator.serviceWorker.onmessage = async (message) => {
       } else if (message.data.type === 'PUSH') {
         if (DEBUG)
           console.log('Notification received by web-push')
+        try {
+          const obj = decode(keyFromB64(message.data.payload))
+        } catch (e: any) { }
         if (onPushMessage)
           await onPushMessage(message.data)
       } else {
