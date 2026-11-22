@@ -8,7 +8,7 @@
             class="q-mt-md" v-model="lang" label="Lang"
             :options="opts" style="width: 150px">
           </q-select>
-          <div class="titre-md q-mb-md">{{$t('lang')}}</div>
+          <div class="title-md q-mb-md">{{$t('lang')}}</div>
         </div>
         <q-toggle v-model="obj.dark" :label="$t('darkclear')" :color="clr('dark')"/>
       </div>

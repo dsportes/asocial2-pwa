@@ -3,7 +3,7 @@
 <div class="mwmd">
   <div v-if="!ui.currentEvent.zoomed && !ui.currentForm.increation" class="full-width">
 
-    <div v-if="!events.length" class="titre-md text-italic q-pa-md">{{ $t('FORMnoevents') }}</div>
+    <div v-if="!events.length" class="title-md text-italic q-pa-md">{{ $t('FORMnoevents') }}</div>
     <div v-else v-for="(event, idx) of events" :key="event.eventId"
       :class="clcase(event, idx) + ' q-my-sm full-width cursor-pointer select'"
       @click="selEvent(event, idx)">

@@ -6,7 +6,7 @@
       :text="edLabels" :rows="15" :checklabel="$t('record')" :zctrl="zctrl"
       :rw="adp.mdAdmin" @done="saveLabels"/>
 
-    <div class="titre-md text-italic q-mb-sm">{{ $t(sites.size ? 'APsites' : 'APnosites') }}</div>
+    <div class="title-md text-italic q-mb-sm">{{ $t(sites.size ? 'APsites' : 'APnosites') }}</div>
     <scroll-area size="sm" class="mwsm">
       <div v-for="([site, url], idx) of sites" :key="site"
         :class="'row items-center cursor-pointer ' + dkli(idx) + (site === ui.adminPage.site ? ' current': ' nocurrent')"
@@ -38,7 +38,7 @@
       <div v-if="!adp.pingop && !adp.pingst" class="msg q-my-xs">
         {{ $t('site_err') }}
       </div>
-      <div v-else class="titre-md text-italic q-my-xs">
+      <div v-else class="title-md text-italic q-my-xs">
         {{ $t('site_ok', [adp.pingop || adp.pingst]) }}
       </div>
       <div v-if="adp.pingop">
@@ -108,16 +108,16 @@
   <div v-if="adp.tab === 'orgs' && ui.adminPage.soa" class="mwmd">
     <status-site v-if="ui.adminPage.soa.site" v-model="ui.adminPage.soa" class="q-mt-md"/>
 
-    <div v-if="ui.adminPage.soa.site" class="q-my-sm titre-md">
+    <div v-if="ui.adminPage.soa.site" class="q-my-sm title-md">
       <div v-if="ui.adminPage.soa.admin" class="row q-gutter-sm items-center">
         <img :src="superman" width="24px"/>
-        <div class="titre-md text-bold">{{ $t('APsiteadmin') }}</div>
+        <div class="title-md text-bold">{{ $t('APsiteadmin') }}</div>
       </div>
-      <div class="titre-md">{{ $t('APsinfo', [ui.adminPage.soa.site, surl]) }}</div>
+      <div class="title-md">{{ $t('APsinfo', [ui.adminPage.soa.site, surl]) }}</div>
     </div>
 
     <div v-if="ui.adminPage.soa.site && ui.adminPage.soa.org" class="q-my-md">
-      <div class="q-mb-sm titre-md">
+      <div class="q-mb-sm title-md">
         {{ $t('orgStatus', [ui.adminPage.soa.org, ui.adminPage.soa.svcLabel, ui.adminPage.soa.site]) }}
       </div>
       <status-org v-model="ui.adminPage.soa"/>

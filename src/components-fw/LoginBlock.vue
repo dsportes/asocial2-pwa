@@ -12,12 +12,12 @@ Event émis: logged
   </div>
 
   <div v-if="!starter.hasNet && session.hasLocal && sf.trustings.size && !trustingsCached.length" 
-    class="titre-md msg2 text-center q-ma-sm">{{ $t('LOGplaneimp2') }}</div>
+    class="title-md msg2 text-center q-ma-sm">{{ $t('LOGplaneimp2') }}</div>
 
   <div v-if="mayPlane"
     class="row full-width items-center q-my-sm q-gutter-sm">
     <btn-bubble :text="$t('LOGauthplane_bub')"/>
-    <div class="text-italic titre-md q-ml-sm"> {{$t('LOGauthplane_label')}}</div>
+    <div class="text-italic title-md q-ml-sm"> {{$t('LOGauthplane_label')}}</div>
     <div v-for="u in trustingsCached" :key="u.userId"
       :class="'q-ml-sm cursor-pointer select font-mono q-px-xs text-white fs-md ' + (u === selectedUserpl ? 'bg-warning' : 'bg-primary')"
       @click="selectUserpl(u)">{{u.pseudo}}
@@ -32,7 +32,7 @@ Event émis: logged
   <div v-if="mayPin" 
     class="row full-width items-center q-my-sm q-gutter-sm">
     <btn-bubble :text="$t('LOGauthbypin_bub')"/>
-    <div class="text-italic titre-md q-ml-sm">{{$t('LOGauthbypin_label')}}</div>
+    <div class="title-md">{{$t('LOGauthbypin_label')}}</div>
     <div v-for="[,u] in sf.trustings" :key="u.userId"
       :class="'q-ml-sm cursor-pointer select font-mono q-px-xs text-white fs-md ' + (u === selectedUser ? 'bg-warning' : 'bg-primary')"
       @click="selectUser(u)">{{u.pseudo}}</div>
@@ -46,7 +46,7 @@ Event émis: logged
 
   <!-- Authentification par alias / phrase -->
   <div v-if="starter.hasNet" class="full-width column">
-    <bar-title prefix="LOGap" class="q-mt-sm q-mb-xs text-italic"/>
+    <bar-title prefix="LOGap" class="q-mt-sm q-mb-xs"/>
     <div v-if="diagAP" class="q-my-xs msg q-ml-lg">
       {{ $t('LOGapdiag_' + diagAP)}}</div>
     <input-b v-if="stepAP===0" class="q-ml-lg"

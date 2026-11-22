@@ -2,11 +2,11 @@
 <div class="q-pa-sm column items-center">
   <div class="q-pb-xs row items-center justify-between" 
     style="height:36px !important; min-width:260px; max-width:600px;">
-    <div v-if="!diag" class="col titre-md text-italic">
+    <div v-if="!diag" class="col title-md text-italic">
       {{ title }}
     </div>
     <div v-else class="col column">
-      <div class="titre-xs text-italic">{{ title }}</div>
+      <div class="title-xs text-italic">{{ title }}</div>
       <div class="msg4">{{ diag }}</div>
     </div>
     <btn-cond v-if="diag === ''" round icon="check" @ok="dook"

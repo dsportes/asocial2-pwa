@@ -11,7 +11,7 @@
   <q-card :class="sty('sm')">
     <q-toolbar class="tbs">
       <btn-cond icon="close" size="md" flat color="warning" @ok="emit('giveup', true)"/>
-      <q-toolbar-title class="titre-lg full-width text-center">{{$t(prefix + '_tit')}}</q-toolbar-title>
+      <q-toolbar-title class="title-lg full-width text-center">{{$t(prefix + '_tit')}}</q-toolbar-title>
     </q-toolbar>
     <sd-nb class="q-ma-sm q-my-md" :text="$t(prefix + '_txt', args || [])"/>
     <q-card-actions vertical align="center">

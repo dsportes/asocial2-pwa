@@ -919,12 +919,12 @@ S'il n'y est pas, c'est que la certification a été retirée à ce terminal.
 `,
   LOGauthbypin_1a: 'Je suis l\'utilisateur [{0}] certifié sur ce terminal',
   LOGauthbypin_1b: 'Je suis un des {0} utilisateurs certifiés sur ce terminal...',
-  LOGapdiag_1: 'Un des alias de la Safe Box est requis.',
-  LOGapdiag_2: 'Une des phrases secrètes d\'ouverture de la Safe Box est requise.',
-  LOGapdiag_3: 'Aucune "Safe Box" n\'est enregistrée sous cet alias.',
-  LOGapdiag_4: 'Cette phrase n\'ouvre pas la Safe Box',
-  LOGap_label: 'Ouvrir une Safe Box par "alias / phrase"',
-  LOGap_bub: `# Ouvrir une Safe Box par "alias / phrase"
+  LOGapdiag_1: 'Un des alias est requis.',
+  LOGapdiag_2: 'Une des phrases secrètes est requise.',
+  LOGapdiag_3: 'Aucun login n\'est enregistré sous cet alias.',
+  LOGapdiag_4: 'Cette phrase n\'est pas reconnue',
+  LOGap_label: 'Login par "alias / phrase"',
+  LOGap_bub: `# Login par "alias / phrase"
 bla bla
 `,
   LOGback: 'Retour au Login',

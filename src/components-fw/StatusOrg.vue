@@ -11,7 +11,7 @@
       class="q-my-sm tbs" switch-toggle-side dense>
       <template v-slot:header>
         <div class="row justify-between full-width">
-          <div class="col-auto titre-md text-bold">{{ $t('APsetstsite') }}</div>
+          <div class="col-auto title-md text-bold">{{ $t('APsetstsite') }}</div>
           <div v-if="setstat" class="col-auto row justify-end">
             <btn-cond color="primary" :label="$t('up')" padding="none sm"
               @ok="updStatus(1)" class="q-mr-sm"/>

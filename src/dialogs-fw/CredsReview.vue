@@ -27,7 +27,7 @@
             </div>
           </div>
         </scroll-area>
-        <div v-else class="titre-lg text-italic">{{ $t('CRRnocred') }}</div>
+        <div v-else class="title-lg text-italic">{{ $t('CRRnocred') }}</div>
       </div>
     </div>
     </template>
@@ -35,7 +35,7 @@
     <template #default>
       <q-resize-observer @resize="ui.setPh"/>
       <div v-if="step >= 2">
-        <div class="q-pt-sm titre-md text-italic">{{ $t('CRRstep_2', [$t('services_' + curso.svc), curso.org]) }}</div>
+        <div class="q-pt-sm title-md text-italic">{{ $t('CRRstep_2', [$t('services_' + curso.svc), curso.org]) }}</div>
         <q-splitter v-model="splitterModel" horizontal :style="sth">
           <template v-slot:before>
  
@@ -61,17 +61,17 @@
               <cred-row :cred="curcr" class="q-my-sm"/>
 
               <div v-if="curcr.alert === 1" 
-                class="q-mb-sm titre-md text-bold text-warning">{{ $t('CRRobs1') }}</div>
+                class="q-mb-sm title-md text-bold text-warning">{{ $t('CRRobs1') }}</div>
 
               <div v-if="curcr.alert === 2" class="row">
-                <div class="col titre-md text-bold">{{ $t('CRRdel2') }}</div>
+                <div class="col title-md text-bold">{{ $t('CRRdel2') }}</div>
                 <btn-cond class="col-auto q-ml-xs" round 
                   icon="undo" color="primary"
                   @ok="undodel"/>
               </div>
 
               <div v-if="curcr.alert === 0" class="row">
-                <div class="col titre-md text-bold text-warning">{{ $t('CRRdel') }}</div>
+                <div class="col title-md text-bold text-warning">{{ $t('CRRdel') }}</div>
                 <btn-cond class="col-auto q-ml-xs" round icon="delete" color="negative"
                   confirm @ok="cftodel"/>
               </div>

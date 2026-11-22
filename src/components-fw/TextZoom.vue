@@ -10,7 +10,7 @@
         <btn-cond icon="close" color="none" flat @ok="dialogs.zoomit = false"/>
         <btn-cond v-if="rw" class="q-ml-sm" icon="check" color="warning"
           :label="checklabel" :disable="text === loc" @ok="done"/>
-        <q-toolbar-title class="titre-md full-width text-center q-pr-xs">{{label}}</q-toolbar-title>
+        <q-toolbar-title class="title-md full-width text-center q-pr-xs">{{label}}</q-toolbar-title>
         <btn-cond icon="zoom_in" flat @ok="zoom"/>
         <btn-cond class="q-ml-xs" icon="zoom_out" flat @ok="unzoom" :disable="rx < 5"/>
       </q-toolbar>

@@ -70,7 +70,7 @@ tous les dialogues de gestion des "dsonnées de sécurité".
         @open="dialogs.PrefsMgr = true"/>
 
       <q-separator color="orange" class="q-my-xs"/>
-      <div class="titre-md text-italic text-bold text-warning text-center">{{ $t('SFTopal') }}</div>
+      <div class="title-md text-italic text-bold text-warning text-center">{{ $t('SFTopal') }}</div>
 
       <bar-open :bubble="$t('HPexpsafe_2')"
         :disable="!starter.hasNet"
@@ -99,10 +99,10 @@ tous les dialogues de gestion des "dsonnées de sécurité".
   <q-dialog v-if="dialogs.delSafe" v-model="dialogs.delSafe" persistent>
     <q-card :class="sty('md') + ' column items-center q-pa-sm'">
     <q-img :src="skull" style="height: 128px; max-width: 128px"/>
-    <div class="q-my-sm titre-lg text-bold text-center">
+    <div class="q-my-sm title-lg text-bold text-center">
         {{$t('SFXskull_9')}}
       </div>
-      <div class="q-my-sm titre-md text-bold text-italic text-center">
+      <div class="q-my-sm title-md text-bold text-italic text-center">
         {{$t('SFXskull_8')}}
       </div>
       <div class="row full-width justify-between items-center">
@@ -115,7 +115,7 @@ tous les dialogues de gestion des "dsonnées de sécurité".
   <!-- Confirmation de perte de confiance du terminal -->
   <q-dialog v-if="dialogs.DevUntrustit" v-model="dialogs.DevUntrustit" persistent>
     <q-card :class="sty('md') + ' column items-center q-pa-sm'">
-      <div class="q-my-sm titre-lg text-bold text-center">
+      <div class="q-my-sm title-lg text-bold text-center">
         {{$t('HPuntrust_1', [sf.devName])}}
       </div>
       <div class="row full-width justify-between items-center">

@@ -3,7 +3,7 @@
   <q-dialog v-model="ui.appDialogs.GotIt" persistent>
     <q-card :class="sty('sm')">
       <q-toolbar class="tbs">
-        <q-toolbar-title class="titre-lg full-width text-center">{{$t('important')}}</q-toolbar-title>
+        <q-toolbar-title class="title-lg full-width text-center">{{$t('important')}}</q-toolbar-title>
       </q-toolbar>
       <!--div class="fs-md q-ma-sm text-center q-mt-md" v-html="ui.diag"></div-->
       <sd-nb class="q-ma-sm q-mt-md" :text="ui.diag.txt"/>

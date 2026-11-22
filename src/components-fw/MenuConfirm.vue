@@ -5,7 +5,7 @@
   <q-menu v-model="m" anchor="center middle" self="center middle">
     <div class="bord q-pa-sm column items-center" style="width: 280px">
       <div class="row items-center q-mb-sm">
-        <div class="titre-lg q-mr-sm">{{ $t('confirm') }}</div>
+        <div class="title-lg q-mr-sm">{{ $t('confirm') }}</div>
         <div class="font-mono fs-xl text-bold">{{ code }}</div>
       </div>
       <q-input class="font-mono fs-lg" style="width:60px;"

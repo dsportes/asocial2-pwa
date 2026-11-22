@@ -7,7 +7,7 @@ Events: close done
 <template #hdr>
 <div :class="sty()">
   <div class="row justify-between q-px-xs q-mb-md items-center">
-    <div :class="'col titre-md ' + (diag === 0 || diag === 5 ? 'text-italic' : 'msg')">
+    <div :class="'col title-md ' + (diag === 0 || diag === 5 ? 'text-italic' : 'msg')">
       {{ $t('UAPdiag_' + diag) }}</div>
     <btn-cond flat size="lg" icon="check" class="col-auto self-end"
       :label="$t('validate')"
@@ -15,7 +15,7 @@ Events: close done
   </div>
 
   <div v-if="mode === 'a' || mode === 'u'" class="column">
-    <div class="q-mt-sm titre-md text-italic">{{ $t('UAPl_a', aliases.length) }}</div>
+    <div class="q-mt-sm title-md text-italic">{{ $t('UAPl_a', aliases.length) }}</div>
     <div v-for="a in aliases" class="row q-ml-lg items-center">
       <btn-cond v-if="!a.del" size="sm" icon="delete" color="warning" @ok="a.del = true"/>
       <btn-cond v-if="a.del" size="sm" icon="undo" color="primary" @ok="a.del = false"/>
@@ -25,7 +25,7 @@ Events: close done
   </div>
 
   <div v-if="mode === 'p' || mode === 'u'" class="column">
-    <div class="q-mt-sm titre-md text-italic">{{ $t('UAPl_p', phrases.length) }}</div>
+    <div class="q-mt-sm title-md text-italic">{{ $t('UAPl_p', phrases.length) }}</div>
     <div v-for="p in phrases" class="row q-ml-lg items-center">
       <btn-cond v-if="!p.del" size="sm" icon="delete" color="warning" @ok="p.del = true"/>
       <btn-cond v-if="p.del" size="sm" icon="undo" color="primary" @ok="p.del = false"/>
@@ -46,7 +46,7 @@ Events: close done
     <q-expansion-item v-if="mode === 'a' || mode === 'u'"
       expand-separator v-model="expandA"
       :label="$t(initA ? 'UAPv_a' : 'UAPs_a')"
-      header-class="titre-lg text-italic">
+      header-class="title-lg text-italic">
         <div class="column" >
           <input-b v-model="entryA" size="alias" prefix="Alias"
             @validate="valA"/>
@@ -64,7 +64,7 @@ Events: close done
     <q-expansion-item v-if="mode === 'p' || mode === 'u'"
       expand-separator v-model="expandP"
       :label="$t(initP ? 'UAPv_p' : 'UAPs_p')"
-      header-class="titre-lg text-italic">
+      header-class="title-lg text-italic">
         <div class="column">
           <input-b v-model="entryP" size="p1" prefix="Phrase"
             @validate="valP"/>

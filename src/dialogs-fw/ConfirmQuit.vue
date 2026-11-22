@@ -9,10 +9,10 @@ Model: ui.appDialogs.ConfirmQuit
   <q-dialog v-model="ui.appDialogs.ConfirmQuit" persistent>
     <q-card :class="sty('sm')">
       <q-toolbar class="tbs">
-        <q-toolbar-title class="titre-lg full-width text-center">{{$t('quitConfirm')}}</q-toolbar-title>
+        <q-toolbar-title class="title-lg full-width text-center">{{$t('quitConfirm')}}</q-toolbar-title>
         <help-button page="page1"/>
       </q-toolbar>
-      <q-card-actions vertical align="center" class="titre-md q-gutter-sm">
+      <q-card-actions vertical align="center" class="title-md q-gutter-sm">
         <btn-cond flat icon="logout" color="warning" size="lg"
           :label="$t('quitQuit')" @ok="coolBye"/>
         <btn-cond flat icon="refresh" color="warning" size="lg"

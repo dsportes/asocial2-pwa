@@ -48,7 +48,7 @@ const clt = computed(() => 'col'
   + (props.center ? ' text-center' : ' text-right') 
   + (props.disable ? ' disabled' : '')
   + (!props.passive ? ' cursor-pointer' : '')
-  + (props.large ? ' titre-lg' : ' titre-md')
+  + (props.large ? ' title-lg' : ' title-md')
 )
 
 const open = () => {

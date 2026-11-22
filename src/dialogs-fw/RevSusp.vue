@@ -8,7 +8,7 @@
   <div v-if="tab === 'delc'" class="q-ma-sm column items-center q-gutter-sm">
     <btn-cond v-if="curcred.props.limit" class="q-my-md" flat :label="$t('CODIRcred_susp5')"
       @ok="okSusp(0)"/>
-    <div class="titre-md text-italic text-center">{{ $t('CODIRcred_del2') }}</div>
+    <div class="title-md text-italic text-center">{{ $t('CODIRcred_del2') }}</div>
     <date-time :title="$t('CODIRcred_del1')" v-model="ddel"/>
     <div v-if="ddel" class="row items-center q-gutter-sm justify-between">
       <div class="col text-italic q-my-sm">{{ dsuspL2() }}</div>
@@ -21,7 +21,7 @@
   <div v-if="tab === 'suspc'" class="q-ma-sm column items-center q-gutter-sm">
     <btn-cond v-if="curcred.props.susp" class="q-my-md" flat :label="$t('CODIRcred_susp4')"
       @ok="okSusp(2)"/>
-    <div class="titre-md text-italic text-center">
+    <div class="title-md text-italic text-center">
       {{ $t('CODIRcred_susp' + (curcred.props.susp ? '3' : '2')) }}
     </div>
     <date-time2 :title="$t('CODIRcred_susp1')" v-model="dsusp"/>

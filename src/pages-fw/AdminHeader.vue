@@ -24,7 +24,7 @@
     <select-svcorg initorg="?" initsvc="?" @select="setOS2"/>
     <div class="row">
       <div v-if="!ui.adminPage.mdAdmin || !ui.adminPage.soa.admin" class="col msg">{{ $t('APnoadm') }}</div>
-      <div v-else class="col titre-md text-italic">{{ $t('APlstmanagers') }}</div>
+      <div v-else class="col title-md text-italic">{{ $t('APlstmanagers') }}</div>
       <btn-cond v-if="ui.adminPage.soa.admin" class="col-auto q-mx-sm self-end"
         icon="refresh" round @ok="setOS3"/>
     </div>

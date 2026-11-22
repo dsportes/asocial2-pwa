@@ -10,14 +10,14 @@
       <btn-cond v-if="!stackvide" class="q-ml-xs" icon="arrow_back" @ok="back">
         <q-tooltip class="bg-white text-primary">{{$t('HLPprec')}}</q-tooltip>
       </btn-cond>
-      <q-toolbar-title class="titre-lg">{{label(selected)}}
+      <q-toolbar-title class="title-lg">{{label(selected)}}
         <q-tooltip class="bg-white text-primary">{{selected}}</q-tooltip>
       </q-toolbar-title>
     </q-toolbar>
     <q-separator color="grey-5" size="2px"/>
     <q-toolbar class="tbp">
       <q-toolbar-title>
-        <a class="q-mr-sm text-italic text-white text-underlined titre-md text-bold cursor-pointer"
+        <a class="q-mr-sm text-italic text-white text-underlined title-md text-bold cursor-pointer"
           :href="docsurl + '/index.html'" target="_blank">
           {{$t('HLPdg')}}</a>
       </q-toolbar-title>
@@ -49,10 +49,10 @@
           group="somegroup">
           <template v-slot:header>
             <div class="full-width column chap q-pa-xs">
-              <div class="text-bold titre-md">{{c.t}}</div>
+              <div class="text-bold title-md">{{c.t}}</div>
               <div v-if="c.m.length" class="self-end q-mr-sm">
                 <div v-for="m in c.m" :key="m.value" @click.stop="goto(m.value)"
-                  class="q-my-xs x1 text-positive text-italic text-bold titre-md cursor-pointer">
+                  class="q-my-xs x1 text-positive text-italic text-bold title-md cursor-pointer">
                   {{m.label}}
                 </div>
               </div>
@@ -94,7 +94,7 @@
   <q-dialog v-model="dialogs.Readme" persistent>
     <q-card :class="sty('md') + 'q-pa-sm'">
       <q-card-section>
-        <div class="titre-md">{{$t('HLPrm1')}}</div>
+        <div class="title-md">{{$t('HLPrm1')}}</div>
         <sd-nb :text="readme" class="q-my-sm rd"/>
       </q-card-section>
       <q-card-actions align="center" class="q-my-sm">
@@ -252,7 +252,7 @@ setChaps(selected.value)
 const stackvide = computed(() => ui.helpstack.length <= 1)
 const courante = computed(() => ui.helpstack[ui.helpstack.length - 1])
 
-const cl = (id: string) => ' titre-md ' + (id === selected.value ? 'q-px-xs bg-yellow-5 text-black text-bold' : '')
+const cl = (id: string) => ' title-md ' + (id === selected.value ? 'q-px-xs bg-yellow-5 text-black text-bold' : '')
 
 function goto (p: string) {
   if (p !== courante.value) {

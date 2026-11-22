@@ -6,7 +6,7 @@ Contrôlé par ui.leftMenu
   <q-header :class="sty()">
     <q-toolbar class="tbs">
       <btn-cond color="none" size="lg" icon="chevron_left" flat @ok="ui.closeMenu()"/>
-      <q-toolbar-title class="titre-md text-center q-mx-sm">
+      <q-toolbar-title class="title-md text-center q-mx-sm">
         {{sf.userName || sf.userId || $t('guest')}}
       </q-toolbar-title>
       <help-button page="help"/>

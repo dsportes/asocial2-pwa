@@ -8,7 +8,7 @@ Résultat en v-model.
     <div class="row full-width items-start">
       <btn-bubble class="q-mr-sm" :text="$t(pfx + '_bub')"
         style="position:relative;top:-4px;"/>
-      <div class="titre-sm text-italic">{{$t('SEStit')}}</div>
+      <div class="title-sm text-italic">{{$t('SEStit')}}</div>
       <div class='font-mono fs-sm text-bold text-italic q-mx-sm'
         style="position:relative; top:-2px">{{ store }}</div>
       <div v-if="err" class="msg3 ellipsis">{{$t('SECsite_msg' + err)}}</div>

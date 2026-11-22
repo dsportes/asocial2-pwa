@@ -5,15 +5,15 @@
       <div class="q-my-sm">
         <div v-for="n in 4" :key="n" class="row no-wrap items-center">
           <q-icon class="col-auto" :name="icons[n -1]" size="1.4em" :color="colors[n -1]"/>
-          <div class="col q-ml-xs titre-sm text-italic">{{  $t('NSst_' + [n -1]) }}</div>
+          <div class="col q-ml-xs title-sm text-italic">{{  $t('NSst_' + [n -1]) }}</div>
         </div>
       </div>
 
-      <div v-if="session.allOK" class="q-my-sm titre-md text-italic">{{ $t('NSallOK')}}</div>
+      <div v-if="session.allOK" class="q-my-sm title-md text-italic">{{ $t('NSallOK')}}</div>
       <div v-else class="q-my-sm msg">{{ $t('NSallKO') }}</div>
       <div v-for="site in entries" :key="site">
         <div class="row items-center q-gutter-sm">
-          <div class="col-auto titre-md text-italic">{{$t('NSsite')}}</div>
+          <div class="col-auto title-md text-italic">{{$t('NSsite')}}</div>
           <q-icon class="col-auto" :name="icons[st(site)]" size="1.4em" :color="colors[st(site)]"/>
           <div class="font-mono text-bold">{{ site }}</div>
         </div>
@@ -21,7 +21,7 @@
           <div v-for="svc in Object.keys(elt(site))" :key="svc">
             <div v-if="svc !== '$ST$'">
               <div class="row no-wrap items-center q-gutter-sm">
-                <div class="col-auto titre-md text-italic">{{$t('NSsvc')}}</div>
+                <div class="col-auto title-md text-italic">{{$t('NSsvc')}}</div>
                 <q-icon class="col-auto" :name="icons[st(site, svc)]" size="1.4em" :color="colors[st(site, svc)]"/>
                 <div class="col-auto font-mono text-bold">[{{ svc }}]</div>
                 <div class="col ellipsis">{{ $t('services_' + svc) }}</div>

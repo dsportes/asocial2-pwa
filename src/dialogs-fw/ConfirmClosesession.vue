@@ -6,12 +6,12 @@
   <q-dialog v-model="ui.appDialogs.ConfirmCloseSession" persistent>
     <q-card :class="sty('sm')">
       <q-toolbar class="tbs">
-        <q-toolbar-title class="titre-lg full-width text-center">
+        <q-toolbar-title class="title-lg full-width text-center">
           {{ ui.editingInCourse ? $t('closeCf') : $t('backopen')}}
         </q-toolbar-title>
       </q-toolbar>
       <sd-nb class="q-ma-sm q-my-md" :text="$t(ui.editingInCourse ? 'closeCf_label' : 'backopen_label')"/>
-      <q-card-actions vertical align="center" class="titre-md q-gutter-sm">
+      <q-card-actions vertical align="center" class="title-md q-gutter-sm">
         <btn-cond flat icon="logout" color="warning"
           :label="$t('closeCf_1s')" @ok="ui.cfSessionClose"/>
         <btn-cond flat icon="arrow_forward"

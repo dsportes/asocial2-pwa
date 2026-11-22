@@ -14,7 +14,7 @@
         class="row items-center q-gutter-sm">
         <q-toggle v-model="ui.currentForm.asAdmin" color="warning"/>
         <img v-if="ui.currentForm.asAdmin" :src="superman" width="32px"/>
-        <div class="titre-md text-italic">{{ $t('FORMadmin') }}</div>
+        <div class="title-md text-italic">{{ $t('FORMadmin') }}</div>
       </div>
 
       <div v-if="!ui.currentForm.pft.size" class="msg">{{ $t('FORMnoprops') }}</div>

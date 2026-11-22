@@ -3,9 +3,9 @@
   <div class="mwmd" style="position:relative">
     <q-splitter v-model="splitterModel" horizontal :style="sth">
       <template v-slot:before>
-        <div v-if="session.planeMode" class="titre-md text-italic">{{ $t('COREDplane') }}</div>
+        <div v-if="session.planeMode" class="title-md text-italic">{{ $t('COREDplane') }}</div>
         <div v-else>
-          <div v-if="!auteurs.length" class="titre-md text-italic">{{ $t('COREDnoaut') }}</div>
+          <div v-if="!auteurs.length" class="title-md text-italic">{{ $t('COREDnoaut') }}</div>
           <div v-else class="q-pa-xs">
             <div v-for="(a, idx) in auteurs" :key="idx"
               :class="'row select cursor-pointer ' + dkli(idx)"
@@ -26,7 +26,7 @@
           </div-->
 
           <div class="row items-center q-gutter-md">
-            <div class="titre-md text-italic col-auto">{{ $t('CODIRsa') }}</div>
+            <div class="title-md text-italic col-auto">{{ $t('CODIRsa') }}</div>
             <div class="font-mono">{{ aut.a.section }} - {{ aut.edv }}</div>
           </div>
 
@@ -36,13 +36,13 @@
             @select="majSection"/>
 
           <div class="row items-center q-gutter-md">
-            <div class="titre-md text-italic col-auto">{{ $t('CODIRna') }}</div>
+            <div class="title-md text-italic col-auto">{{ $t('CODIRna') }}</div>
             <div class="font-mono">{{ aut.a.nomAuteur }}</div>
           </div>
           <line-edit :text="aut.newNa" @change="majNa" class="q-ml-lg"
             datasize="auteur" width="sm" confirm/>
 
-          <div class="titre-md text-italic q-mt-sm">{{ $t('CODIRcreds') }}</div>
+          <div class="title-md text-italic q-mt-sm">{{ $t('CODIRcreds') }}</div>
           <div v-for="([, c], idx) in aut.a.creds" :key="c.credId"
             :class="'row q-ml-lg cursor-pointer ' + dkli(idx)" @click="openCred(c)">
             <div class="col-3 font-mono q-pr-sm text-bold">{{ c.props.trig }}</div>

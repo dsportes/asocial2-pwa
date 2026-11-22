@@ -8,19 +8,19 @@
     <q-checkbox dense v-model="toSave" :label="$t('OPTStosave')" />
   </div>
 
-  <div class="q-mt-md titre-md text-italic">{{ $t('OPTSpref') }}</div>
+  <div class="q-mt-md title-md text-italic">{{ $t('OPTSpref') }}</div>
   <div class="row q-gutter-sm">
     <q-radio v-for="code in prCodes" dense v-model="selPref" 
       :val="code" :label="code" />
   </div>
 
-  <div class="row items-center q-mt-md titre-md text-italic">
-    <div class="titre-md text-italic">{{ $t('OPTSroles') }}</div>
+  <div class="row items-center q-mt-md title-md text-italic">
+    <div class="title-md text-italic">{{ $t('OPTSroles') }}</div>
     <btn-cond v-if="orChg" round class="q-ml-md" icon="undo" @ok="undo"/>
   </div>
   <div v-for="(r, idx) in orgRoles" :key="r.role" 
     :class="dkli(idx) + ' q-my-sm q-pl-lg'">
-    <div class="titre-md">{{ r.label }}</div>
+    <div class="title-md">{{ r.label }}</div>
     <div class="row q-gutter-md">
       <q-checkbox dense v-for="org in r.orgs" :key="org.org" v-model="org.sel" 
         :label="org.org"/>

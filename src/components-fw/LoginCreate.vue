@@ -2,7 +2,7 @@
 <div>
   <q-toolbar>
     <btn-bubble :text="$t('LOGcreate_bub')"/>
-    <q-toolbar-title class="titre-md text-center q-mx-sm">{{$t('LOGcreate_tit')}}</q-toolbar-title>
+    <q-toolbar-title class="title-md text-center q-mx-sm">{{$t('LOGcreate_tit')}}</q-toolbar-title>
     <q-checkbox v-model="adm" color="negative" size="16px"
       checked-icon="star" unchecked-icon="star_border"/>
   </q-toolbar>

@@ -3,18 +3,18 @@
     :color="color"
     :icon="icons[mode]">
     <q-menu v-model="menum" class="q-pa-sm">
-      <div class="titre-md text-italic q-pa-xs">{{ $t('LOGmode_' + mode) }}</div>
+      <div class="title-md text-italic q-pa-xs">{{ $t('LOGmode_' + mode) }}</div>
       <div v-if="sf.userId">
         <div v-if="session.hasLocal" class="q-pa-xs">
-          <span class="titre-md text-italic">{{ $t('pseudolocal') }}</span>
+          <span class="title-md text-italic">{{ $t('pseudolocal') }}</span>
           <span class="q-ml-sm text-bold font-mono">{{ sf.userName }}</span>
         </div>
         <div class="q-pa-xs">
-          <span class="titre-md text-italic">{{ $t('userid') }}</span>
+          <span class="title-md text-italic">{{ $t('userid') }}</span>
           <span class="q-ml-sm font-mono">{{ sf.userId }}</span>
         </div>
         <div class="q-pa-xs">
-          <span class="titre-md text-italic">{{ $t('sessionid') }}</span>
+          <span class="title-md text-italic">{{ $t('sessionid') }}</span>
           <span class="q-ml-sm font-mono">{{ session.sessionId }}</span>
         </div>
       </div>
@@ -22,7 +22,7 @@
       <div v-if="starter.hasNet">
         <div v-if="permState !== 'granted'" class="q-pa-xs msg">{{ $t('PEinfo') }}</div>
         <q-expansion-item v-if="session.step > 1 && !session.noDoc" :label="lbl" dense
-          :header-class="(session.syncKO ? 'tbw' : 'tbs') + ' text-bold titre-md text-italic'">
+          :header-class="(session.syncKO ? 'tbw' : 'tbs') + ' text-bold title-md text-italic'">
           <net-status/>
           <btn-cond icon="open_in_new" @ok="more"
             style="position:absolute;top:0;right:0"/>

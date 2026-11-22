@@ -3,10 +3,10 @@
     @close="retry" 
     :title="$t('NStit')">
     <template #default>
-      <div v-if="!session.syncOK" class="q-my-sm q-pas-xz msg titre-md">{{ $t('NSsyncKO') }}</div>
-      <div v-if="session.allOK" class="q-my-sm titre-md text-italic">{{ $t('NSallOK')}}</div>
+      <div v-if="!session.syncOK" class="q-my-sm q-pas-xz msg title-md">{{ $t('NSsyncKO') }}</div>
+      <div v-if="session.allOK" class="q-my-sm title-md text-italic">{{ $t('NSallOK')}}</div>
       <div v-else class="q-my-sm">
-        <div v-if="verif" class="titre-lg text-italic q-ma-md">{{ $t('NSverif') }}</div>
+        <div v-if="verif" class="title-lg text-italic q-ma-md">{{ $t('NSverif') }}</div>
         <div v-else>
           <net-status/>
           <q-separator class="q-my-sm q-mb-md" color="orange"/>

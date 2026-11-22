@@ -6,10 +6,10 @@
   <q-dialog v-model="ui.appDialogs.ConfirmClose2" persistent>
     <q-card :class="sty('sm')">
       <q-toolbar class="tbs">
-        <q-toolbar-title class="titre-lg full-width text-center">{{$t('closeCf')}}</q-toolbar-title>
+        <q-toolbar-title class="title-lg full-width text-center">{{$t('closeCf')}}</q-toolbar-title>
       </q-toolbar>
       <sd-nb class="q-ma-sm q-my-md" :text="$t('closeCf_label')"/>
-      <q-card-actions vertical align="center" class="titre-md q-gutter-sm">
+      <q-card-actions vertical align="center" class="title-md q-gutter-sm">
         <btn-cond flat icon="logout" color="warning"
           :label="$t('closeCf_12')" @ok="ui.resolveEditing(true)"/>
         <btn-cond flat icon="arrow_forward"

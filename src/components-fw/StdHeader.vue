@@ -4,7 +4,7 @@
     <btn-mode/>
     <slot name="btn"/>
 
-    <q-toolbar-title class="titre-md text-center q-mx-sm">{{tit}}</q-toolbar-title>
+    <q-toolbar-title class="title-md text-center q-mx-sm">{{tit}}</q-toolbar-title>
 
     <btn-bubble v-if="ui.page" clear class="q-ml-md" :text="$t('PAGE' + ui.page + '_bub')"/>
     <settings-button class="q-ml-sm"/>

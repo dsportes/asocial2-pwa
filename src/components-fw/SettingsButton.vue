@@ -82,11 +82,11 @@
 
         <div class="q-pa-xs column items-center">
           <div class="row">
-            <div class="text-right titre-md text-italic q-pr-sm">{{$t('app')}}</div>
+            <div class="text-right title-md text-italic q-pr-sm">{{$t('app')}}</div>
             <div class="font-mono text-bold">{{appConfig.APPNAME}}</div>
           </div>
           <div class="row">
-            <div class="text-right titre-md text-italic q-pr-sm">{{$t('build')}}</div>
+            <div class="text-right title-md text-italic q-pr-sm">{{$t('build')}}</div>
             <div class="font-mono text-bold">{{appConfig.BUILD}}</div>
           </div>
           <btn-cond label="Import Safe" size="sm" flat icon="warning"
@@ -106,23 +106,23 @@
       <q-toolbar class="tbs">
         <btn-cond flat :label="$t('gotit')" icon="check" color="none"
           @ok="closeSS"/>
-        <q-toolbar-title class="titre-md full-width text-center">{{$t('servicestatus')}}</q-toolbar-title>
+        <q-toolbar-title class="title-md full-width text-center">{{$t('servicestatus')}}</q-toolbar-title>
       </q-toolbar>
     <select-svcorg class="full-width q-mx-xs"
       initorg="?" initsvc="?" @select="setOS"/>
 
     <status-site v-if="so.site" v-model="so" class="q-mt-md"/>
 
-    <div v-if="so.site" class="q-my-sm titre-md">
+    <div v-if="so.site" class="q-my-sm title-md">
       <div v-if="so.admin" class="row q-gutter-sm items-center">
         <img :src="superman" width="24px"/>
-        <div class="titre-md text-bold">{{ $t('APsiteadmin') }}</div>
+        <div class="title-md text-bold">{{ $t('APsiteadmin') }}</div>
       </div>
-      <div class="titre-md">{{ $t('APsinfo', [so.site, surl]) }}</div>
+      <div class="title-md">{{ $t('APsinfo', [so.site, surl]) }}</div>
     </div>
 
     <div v-if="so.site && so.org" class="q-my-md">
-      <div class="q-mb-sm titre-md">{{ $t('orgStatus', [so.org, so.svcLabel, so.site]) }}</div>
+      <div class="q-mb-sm title-md">{{ $t('orgStatus', [so.org, so.svcLabel, so.site]) }}</div>
       <status-org v-model="so"/>
     </div>
     </q-card>
@@ -139,14 +139,14 @@
       </q-toolbar>
 
       <div class="q-pa-sm">
-        <div class="titre-md q-my-md">{{$t('RLtit2')}}</div>
+        <div class="title-md q-my-md">{{$t('RLtit2')}}</div>
         <div class="row q-my-sm justify-between items-center">
-          <div class="titre-md text-bold">{{$t('RLopt1')}}</div>
+          <div class="title-md text-bold">{{$t('RLopt1')}}</div>
           <btn-cond icon="system_update" color="primary"
             :label="$t('clickhere')" @ok="reloadPage"/>
         </div>
         <div class="row q-my-sm justify-between items-center">
-          <div class="col titre-md q-my-sm text-italic">{{$t('RLopt2')}}</div>
+          <div class="col title-md q-my-sm text-italic">{{$t('RLopt2')}}</div>
           <btn-cond class="col-auto q-ml-sm" icon="close"
             color="primary" :label="$t('gotit')" @ok="session.newVersionDialog = false"/>
         </div>
@@ -161,10 +161,10 @@
         <div :class="sty() + 'cursor-pointer stop'" @click="dialogs.confirmStopop = true">
           <div class="row items-center justify-between q-pa-sm" style="width:20rem">
             <div class="col column items-center">
-              <div class="text-bold titre-md">{{$t('MLAopc')}}</div>
+              <div class="text-bold title-md">{{$t('MLAopc')}}</div>
               <div class="text-bold text-italic">{{ session.opEncoursName}}</div>
               <!--div class="text-bold text-italic">{{$t('op_' + session.opEncours.opName)}}</div-->
-              <div class="titre-sm">{{$t('MLAint')}}</div>
+              <div class="title-sm">{{$t('MLAint')}}</div>
             </div>
             <div class="col-auto row items-center justify-center q-pa-sm">
               <q-spinner color="primary" size="40px" :thickness="4"/>
@@ -214,99 +214,99 @@
         <div class="text-italic text-bold fs-md font-mono">Mono 1 l 0 O wiw italic bold md</div>
         <div class="fs-xl font-mono">Mono 1 l 0 O iii xl</div>
         <div class="fs-xl font-mono">Mono 1 l 0 O www xl</div>
-        <div class="titre-sm q-mt-md">Titre sm</div>
-        <div class="titre-md">Titre md</div>
-        <div class="text-italic titre-md">Titre italic md</div>
-        <div class="text-bold titre-md">Titre italic md</div>
-        <div class="text-italic text-bold titre-md">Titre italic bold md</div>
-        <div class="titre-xl">Titre xl</div>
+        <div class="title-sm q-mt-md">Titre sm</div>
+        <div class="title-md">Titre md</div>
+        <div class="text-italic title-md">Titre italic md</div>
+        <div class="text-bold title-md">Titre italic md</div>
+        <div class="text-italic text-bold title-md">Titre italic bold md</div>
+        <div class="title-xl">Titre xl</div>
 
         <q-separator color="orange" class="q-my-md"/>
         <div class="spsm">
         <div class="q-my-sm row reverse q-gutter-sm items-center">
-          <div class="col titre-md w10 ">{{$t('THprimary')}}</div>
+          <div class="col title-md w10 ">{{$t('THprimary')}}</div>
           <div class="dk col-auto"><div class="pal" :style="styd('primary')"/></div>
           <div class="li col-auto"><div class="pal" :style="styd('primary')"/></div>
         </div>
         <div class="q-my-sm row reverse q-gutter-sm items-center">
-          <div class="col titre-md w10 ">{{$t('THsecondary')}}</div>
+          <div class="col title-md w10 ">{{$t('THsecondary')}}</div>
           <div class="dk col-auto"><div class="pal" :style="styd('secondary')"/></div>
           <div class="li col-auto"><div class="pal" :style="styd('secondary')"/></div>
         </div>
 
         <div class="q-my-sm row reverse q-gutter-sm items-center">
-          <div class="col titre-md w10 ">{{$t('THinfo')}}</div>
+          <div class="col title-md w10 ">{{$t('THinfo')}}</div>
           <div class="dk col-auto"><div class="pal" :style="styd('info')"/></div>
           <div class="li col-auto"><div class="pal" :style="styd('info')"/></div>
         </div>
 
         <div class="q-my-sm row reverse q-gutter-sm items-center">
-          <div class="col titre-md w10 ">{{$t('THaccent')}}</div>
+          <div class="col title-md w10 ">{{$t('THaccent')}}</div>
           <div class="dk col-auto"><div class="pal" :style="styd('accent')"/></div>
           <div class="li col-auto"><div class="pal" :style="styd('accent')"/></div>
         </div>
 
         <div class="q-my-sm row reverse q-gutter-sm items-center">
-          <div class="col titre-md w10 ">{{$t('THpositive')}}</div>
+          <div class="col title-md w10 ">{{$t('THpositive')}}</div>
           <div class="dk col-auto"><div class="pal" :style="styd('positive')"/></div>
           <div class="li col-auto"><div class="pal" :style="styd('positive')"/></div>
         </div>
 
         <div class="q-my-sm row reverse q-gutter-sm items-center">
-          <div class="col titre-md w10 ">{{$t('THnegative')}}</div>
+          <div class="col title-md w10 ">{{$t('THnegative')}}</div>
           <div class="dk col-auto"><div class="pal" :style="styd('negative')"/></div>
           <div class="li col-auto"><div class="pal" :style="styd('negative')"/></div>
         </div>
 
         <div class="q-my-sm row reverse q-gutter-sm items-center">
-          <div class="col titre-md w10 ">{{$t('THwarning')}}</div>
+          <div class="col title-md w10 ">{{$t('THwarning')}}</div>
           <div class="dk col-auto"><div class="pal" :style="styd('warning')"/></div>
           <div class="li col-auto"><div class="pal" :style="styd('warning')"/></div>
         </div>
 
         <div class="q-my-sm row reverse q-gutter-sm items-center">
-          <div class="col titre-md w10 ">{{$t('THmsgbg')}}</div>
+          <div class="col title-md w10 ">{{$t('THmsgbg')}}</div>
           <div class="dk col-auto"><div class="pal" :style="styd('msgbg')"/></div>
           <div class="li col-auto"><div class="pal" :style="styd('msgbg')"/></div>
         </div>
         <div class="q-my-sm row reverse q-gutter-sm items-center">
-          <div class="col titre-md w10 ">{{$t('THmsgtc')}}</div>
+          <div class="col title-md w10 ">{{$t('THmsgtc')}}</div>
           <div class="dk col-auto"><div class="pal" :style="styd('msgtc')"/></div>
           <div class="li col-auto"><div class="pal" :style="styd('msgtc')"/></div>
         </div>
 
         <div class="q-my-sm row reverse q-gutter-sm items-center">
-          <div class="col titre-md w10 ">{{$t('THtbptc')}}</div>
+          <div class="col title-md w10 ">{{$t('THtbptc')}}</div>
           <div class="dk col-auto"><div class="pal" :style="styd('tbptc')"/></div>
           <div class="li col-auto"><div class="pal" :style="styd('tbptc')"/></div>
         </div>
         <div class="q-my-sm row reverse q-gutter-sm items-center">
-          <div class="col titre-md w10 ">{{$t('THtbstc')}}</div>
+          <div class="col title-md w10 ">{{$t('THtbstc')}}</div>
           <div class="dk col-auto"><div class="pal" :style="styd('tbstc')"/></div>
           <div class="li col-auto"><div class="pal" :style="styd('tbstc')"/></div>
         </div>
         <div class="q-my-sm row reverse q-gutter-sm items-center">
-          <div class="col titre-md w10 ">{{$t('THbtnbg')}}</div>
+          <div class="col title-md w10 ">{{$t('THbtnbg')}}</div>
           <div class="dk col-auto"><div class="pal" :style="styd('btnbg')"/></div>
           <div class="li col-auto"><div class="pal" :style="styd('btnbg')"/></div>
         </div>
         <div class="q-my-sm row reverse q-gutter-sm items-center">
-          <div class="col titre-md w10 ">{{$t('THbtntc')}}</div>
+          <div class="col title-md w10 ">{{$t('THbtntc')}}</div>
           <div class="dk col-auto"><div class="pal" :style="styd('btntc')"/></div>
           <div class="li col-auto"><div class="pal" :style="styd('btntc')"/></div>
         </div>
         <div class="q-my-sm row reverse q-gutter-sm items-center">
-          <div class="col titre-md w10 ">{{$t('THbtwbg')}}</div>
+          <div class="col title-md w10 ">{{$t('THbtwbg')}}</div>
           <div class="dk col-auto"><div class="pal" :style="styd('btwbg')"/></div>
           <div class="li col-auto"><div class="pal" :style="styd('btwbg')"/></div>
         </div>
         <div class="q-my-sm row reverse q-gutter-sm items-center">
-          <div class="col titre-md w10 ">{{$t('THbtwtc')}}</div>
+          <div class="col title-md w10 ">{{$t('THbtwtc')}}</div>
           <div class="dk col-auto"><div class="pal" :style="styd('btwtc')"/></div>
           <div class="li col-auto"><div class="pal" :style="styd('btwtc')"/></div>
         </div>
         <div class="q-my-sm row reverse q-gutter-sm items-center">
-          <div class="col titre-md w10 ">{{$t('THmdtitre')}}</div>
+          <div class="col title-md w10 ">{{$t('THmdtitre')}}</div>
           <div class="dk col-auto"><div class="pal" :style="styd('mdtitre')"/></div>
           <div class="li col-auto"><div class="pal" :style="styd('mdtitre')"/></div>
         </div>
@@ -322,11 +322,11 @@
       <div class="q-pa-xs">
         <input-b class="q-mt-md q-mb-sm" v-model="ps" size="ps"
           prefix="SBphrase" @validate="validPs"/>
-        <div class="q-mt-md titre-md text-italic">{{$t('SBphrase_sh')}}</div>
+        <div class="q-mt-md title-md text-italic">{{$t('SBphrase_sh')}}</div>
         <q-input dense class="q-mb-md font-mono text-bold" filled v-model="cr.b64" />
-        <div class="q-mt-md titre-md text-italic">{{$t('SBphrase_sha')}}</div>
+        <div class="q-mt-md title-md text-italic">{{$t('SBphrase_sha')}}</div>
         <q-input dense class="q-mb-md font-mono text-bold" filled v-model="cr.shaps" />
-        <div class="q-mt-md titre-md text-italic">{{$t('SBphrase_shaS')}}</div>
+        <div class="q-mt-md title-md text-italic">{{$t('SBphrase_shaS')}}</div>
         <q-input dense class="q-mb-md font-mono text-bold" filled v-model="cr.shaSps" />
 
         <q-separator class="q-my-md" color="orange" />
@@ -338,12 +338,12 @@
 
         <q-separator class="q-my-md" color="orange" />
 
-        <div class="text-italic titre-md q-my-xs text-center">{{ $t('SBgencc') }}</div>
+        <div class="text-italic title-md q-my-xs text-center">{{ $t('SBgencc') }}</div>
         <div class="row justify-around q-my-xs">
           <btn-cond class="q-mb-md" :label="$t('SBgensv')" @ok="genSV"/>
           <btn-cond class="q-mb-md" :label="$t('SBgendc')" @ok="genDC"/>
         </div>
-        <div v-if="cr.x" class="q-my-sm titre-md text-italic">
+        <div v-if="cr.x" class="q-my-sm title-md text-italic">
           {{$t('SBgen_' + cr.x)}}</div>
         <q-input class="q-pa-xs bord1" v-model="cr.pems" type="textarea"
          :rows="15"/>
@@ -357,7 +357,7 @@
     <template #hdr>
       <div class="row q-ma-xs items-center justify-between">
         <div class="row col">
-          <div class="titre-md text-bold q-mr-md">{{session.edPref.code}}</div>
+          <div class="title-md text-bold q-mr-md">{{session.edPref.code}}</div>
           <div class="font-mono fs-sm text-italic">[{{dhcool(session.edPref.time)}}]</div>
         </div>
         <btn-cond class="q-ml-xs" icon="check" :label="$t('validate')" @ok="edValid"

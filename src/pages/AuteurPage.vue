@@ -105,7 +105,7 @@
 
 
 <div v-if="ui.appPage.tab === 'pubs'" class="column items-center">
-  <div class="self-end q-ma-xs text-italic text-bold titre-md">{{ ui.appPage.aut.nomAuteur }}</div>
+  <div class="self-end q-ma-xs text-italic text-bold title-md">{{ ui.appPage.aut.nomAuteur }}</div>
 
   <q-page-sticky position="top-left" :offset="[7, 7]">
     <q-toolbar :class="sty()">

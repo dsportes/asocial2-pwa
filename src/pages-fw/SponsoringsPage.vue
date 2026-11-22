@@ -23,7 +23,7 @@
           </div>
 
           <div class="row items-center">
-            <div class="col-4 titre-md text-italic ellipsis">{{ $t('FORMuser') }}</div>
+            <div class="col-4 title-md text-italic ellipsis">{{ $t('FORMuser') }}</div>
             <div class="col-8 q-pl-sm font-mono">
               <span>{{ form.userId }}</span>
               <span v-if="form.userId === sf.userId" class="text-bold q-ml-md">[{{ $t('me') }}]</span>
@@ -31,7 +31,7 @@
           </div>
         </div>
       </div>
-      <div v-else class="titre-md text-italic">{{ $t('FORMnoforms') }}</div>
+      <div v-else class="title-md text-italic">{{ $t('FORMnoforms') }}</div>
     </div>
 
     <div v-else class="mwmd">

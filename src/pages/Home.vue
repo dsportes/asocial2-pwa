@@ -17,22 +17,11 @@
   </q-drawer>
 
   <q-page-container class="font-def">
-    <!--
     <transition name="anim1">
-      <q-page v-if="ui.page === 'p1'" class="column">
-        <p1/>
-      </q-page>
-    </transition>
-    <transition name="anim1">
-      <q-page v-if="ui.page === 'p2'" class="column">
-        <p2/>
-      </q-page>
-    </transition>
-    -->
-    <transition name="anim1">
+      <!-- :class="'column ano-' + ($q.dark.isActive ? 'w' : 'b')" -->
       <q-page v-if="ui.page === 'safeHome'"
-        :class="'column ano-' + ($q.dark.isActive ? 'w' : 'b')">
-        <safe-home class="q-mt-sm"/>
+        style="display:grid;min-height:80vh;place-items:center;margin:0">
+        <safe-home/>
       </q-page>
     </transition>
     <transition name="anim1">
@@ -70,7 +59,7 @@
     </transition>
     <transition name="anim1">
       <q-page v-if="ui.page === 'app'" :class="'ano-' + ($q.dark.isActive ? 'w' : 'b')">
-        <!--div class="titre-xxl">Hello world</div-->
+        <!--div class="title-xxl">Hello world</div-->
       </q-page>
     </transition>
     <transition name="anim1">

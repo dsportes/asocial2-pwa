@@ -23,7 +23,7 @@
     <div v-if="!ui.appPage.org" class="msg">{{ $t('CODIRnoorg') }}</div>
     <div v-else>
       <div v-if="!ui.appPage.sujet" class="msg">{{ $t('CODIRnosuj') }}</div>
-      <div v-else class="titre-md text-center">{{$t('CODIRtit1')}}</div>
+      <div v-else class="title-md text-center">{{$t('CODIRtit1')}}</div>
     </div>
   </div>
 

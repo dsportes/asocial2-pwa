@@ -4,9 +4,9 @@
   <q-splitter v-model="splitterModel" horizontal 
     :style="sth">
     <template v-slot:before>
-      <div v-if="session.planeMode" class="titre-md text-italic">{{ $t('CODIRplane') }}</div>
+      <div v-if="session.planeMode" class="title-md text-italic">{{ $t('CODIRplane') }}</div>
       <div v-else>
-        <div class="titre-md text-italic">{{ $t('CODIRnogr') }}</div>
+        <div class="title-md text-italic">{{ $t('CODIRnogr') }}</div>
       <selmulti-enum v-if="ui.appPage.org" class="col q-mr-md mwlg"
         svc="AS2" :org="ui.appPage.org" enum="Sujet" width="lg"
         title="Choix sujets" 

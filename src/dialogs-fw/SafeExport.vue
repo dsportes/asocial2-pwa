@@ -16,7 +16,7 @@ Events: close done
     <div v-if="tab === 'export' && safe" class="column items-center">
     <div class="q-pa-xs wsm">
       <div class="q-my-sm">
-        <div class="titre-md text-italic">{{$t('SFXps_label')}}</div>
+        <div class="title-md text-italic">{{$t('SFXps_label')}}</div>
         <input-b v-model="entryP" @validate="doExport" size="p1" prefix="SFXps"/>
       </div>
       <div v-if="entryP.err === '' && entryP.np === 0" class="msg">
@@ -33,21 +33,21 @@ Events: close done
         :label="$t('pickfile')" max-file-size="50000000" max-file="1"/>
 
       <div v-if="fd !== null">
-        <div class="titre-md text-italic">{{$t('SFXps_label')}}</div>
+        <div class="title-md text-italic">{{$t('SFXps_label')}}</div>
         <input-b v-model="entryP" @validate="doImport" size="p1" prefix="SFXps"/>
       </div>
 
       <div v-if="safe !== null" class="q-my-md full-width">
-        <div class="titre-md text-italic">{{$t('SFXimpsafe_ok')}}</div>
+        <div class="title-md text-italic">{{$t('SFXimpsafe_ok')}}</div>
         <div v-if="icvs">
-          <div class="titre-lg msg text-center q-my-sm">
+          <div class="title-lg msg text-center q-my-sm">
             {{ icvs.s ? $t('SFXsafeexists_1', [icvs.s]) : $t('SFXsafeexists_0') }}
           </div>
         </div>
         <div v-else> <!-- v-else -->
           <safestore-select v-model="store"/>
 
-          <div class="titre-lg q-mt-md text-italic">{{ $t(initA ? 'UAPv_a' : 'UAPs_a') }}</div>
+          <div class="title-lg q-mt-md text-italic">{{ $t(initA ? 'UAPv_a' : 'UAPs_a') }}</div>
 
           <input-b v-model="entryA" size="alias" prefix="Alias"
             @validate="valA"/>

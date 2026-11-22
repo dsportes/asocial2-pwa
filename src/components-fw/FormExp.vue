@@ -1,7 +1,7 @@
 <template>
   <q-expansion-item v-model="fst.exp[name]" @before-show="fst.expOnShow(name)"
     :label="label" dense switch-toggle-side class="q-ma-sm full-width"
-    header-class="text-bold titre-md text-italic">
+    header-class="text-bold title-md text-italic">
     <slot name="default"/>
   </q-expansion-item>
 </template>

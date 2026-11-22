@@ -6,17 +6,17 @@ selon son type.
   <div v-if="!isDemand">
     <q-expansion-item :label="$t('FORMnewex')" v-model="exp" group="g1"
       dense switch-toggle-side class="q-ma-sm full-width"
-      header-class="text-bold titre-md text-italic">
+      header-class="text-bold title-md text-italic">
       <input-b class="q-my-sm"
         v-model="alias" size="alias" prefix="FORMuseralias" @validate="valA"/>
     </q-expansion-item>
     <q-expansion-item :label="$t('FORMnewinv')" group="g1"
       dense switch-toggle-side class="q-ma-sm full-width"
-      header-class="text-bold titre-md text-italic">
+      header-class="text-bold title-md text-italic">
       <input-b class="q-my-sm"
         v-model="pfx" size="pseudo" prefix="FORMpfxinv" @validate="valP"/>
       <div v-if="invitCode" class="column q-mt-md items-center q-gutter-sm">
-        <div class="titre-lg text-italic text-center">{{ $t('FORMinvcode') }}</div>
+        <div class="title-lg text-italic text-center">{{ $t('FORMinvcode') }}</div>
         <div class="font-mono fs-xxl">{{ invitCode }}</div>
         <btn-cond :label="$t('FORMcopythat')" color="warning"
           size="lg" @ok="validInv" padding="xs sm"/>

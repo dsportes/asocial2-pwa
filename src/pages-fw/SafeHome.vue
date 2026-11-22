@@ -15,8 +15,6 @@
     <select-options v-if="session.step === 1"/>
   </div>
 
-  <!--date-time2 v-model="dt" :class="sty('md') + ' q-my-md'"
-    @ok="chgdt" title="Test saisie période" :checkfn="checkDT"/-->
 </div>
 </template>
 
@@ -32,25 +30,6 @@ import SelectOptions from '../components-fw/SelectOptions.vue'
 
 const ui = stores.ui
 const session = stores.session
-
-/* Test Date-time
-const nowInMin = Math.floor(Date.now() / 60000) * 60000
-const dt = ref({
-  start: nowInMin - 60000,
-  end: nowInMin
-})
-
-const chgdt = (okdt) => {
-  console.log(okdt.star ? date.formatDate(okdt.start, 'YYYY-MM-DD HH:mm') : 0,
-    okdt.end ? date.formatDate(okdt.end, 'YYYY-MM-DD HH:mm') : 0)
-}
-
-const checkDT = (v) => {
-  if (!v) return 'obligatoire'
-  if (v.start && v.end && v.end < v.start + 600000) return 'minimum 10 minutes'
-  return ''
-}
-Fin test Date-time */
 
 const logok = async (x: string) => {
   if (x === 'calc') await step(2)

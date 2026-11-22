@@ -21,7 +21,7 @@ Events: close done
 <template #default>
   <div class="column items-center">
     <div class="mwsm q-pa-xs">
-    <div class="q-my-md text-center titre-md">{{$t('HPprefslist')}}</div>
+    <div class="q-my-md text-center title-md">{{$t('HPprefslist')}}</div>
     <scroll-area class='mwsm'><template #default>
       <div :class="dkli(idx as number)" v-for="(code, idx) of st" :key="code">
         <div :class="pSel(code) + 'row q-my-xs cursor-pointer select'"
@@ -33,11 +33,11 @@ Events: close done
     </template></scroll-area>
 
     <div v-if="selP === null" class="row justify-between items-center q-gutter-sm">
-      <div class="q-my-md text-warning text-italic text-bold titre-md">{{$t('HPprefsnosel')}}</div>
+      <div class="q-my-md text-warning text-italic text-bold title-md">{{$t('HPprefsnosel')}}</div>
       <btn-cond icon="add" :label="$t('HPprefscr')" @ok="newPref"/>
     </div>
     <div v-else>
-      <div class="q-my-md text-bold titre-md">
+      <div class="q-my-md text-bold title-md">
         {{$t('HPprefssel', [selP, coolTime(selP), $t('HPprefsst_' + stc)])}}</div>
       <text-zoom :label="$t('HPprefraw')" :text="rawText"/>
       <div class="row q-gutter-sm">
@@ -63,7 +63,7 @@ Events: close done
   <template #hdr>
     <div class="row q-ma-xs items-center justify-between">
       <div class="row col">
-        <div class="titre-md text-bold q-mr-md">{{session.edPref.code}}</div>
+        <div class="title-md text-bold q-mr-md">{{session.edPref.code}}</div>
         <div v-if="session.edPref.obj.time" class="font-mono fs-sm text-italic">
           [{{dhcool(session.edPref.obj.time)}}]</div>
         <div v-else class="text-italic">{{ $t('HPprefs_new') }}</div>

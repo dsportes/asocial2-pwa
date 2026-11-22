@@ -4,14 +4,14 @@
     <q-card :class="sty('md')">
       <q-toolbar class="tbs">
         <btn-bubble :text="$t('EX' + major + '_bub')"/>
-        <q-toolbar-title class="titre-lg full-width text-center">{{$t('EX' + major + '_label')}}</q-toolbar-title>
+        <q-toolbar-title class="title-lg full-width text-center">{{$t('EX' + major + '_label')}}</q-toolbar-title>
       </q-toolbar>
       <q-card-section v-if="!abort">
-        <div class="q-mb-xs titre-md text-italic">{{ $t('EX_' + (isApp ? 'isApp' : 'isSvc')) }}</div>
+        <div class="q-mb-xs title-md text-italic">{{ $t('EX_' + (isApp ? 'isApp' : 'isSvc')) }}</div>
         <q-separator class="q-mt-md q-mb-xs q-mx-lg" color="orange"/>
         <sd-nb class="q-my-xs" :text="mdtext"/>
         <q-separator class="q-mt-xs q-mb-md q-mx-lg" color="orange"/>
-        <div v-if="important.has(exc.code)" class="q-mt-xs titre-md text-italic">{{ $t('EX_toAdmin') }}</div>
+        <div v-if="important.has(exc.code)" class="q-mt-xs title-md text-italic">{{ $t('EX_toAdmin') }}</div>
         <div class="q-my-xs font-mono fs-sm">[{{ exc.label }}]</div>
         <div>
           <div v-if="org">

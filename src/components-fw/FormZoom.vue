@@ -3,32 +3,32 @@
   <q-expansion-item
     :label="$t('FORMabout') + $t('FORMstatus_' + fst.form.status) + (fst.form.isInvit ? ' [' + $t('FORMisinvit') + ']' : '')"
     dense switch-toggle-side class="q-ma-sm full-width"
-    header-class="text-bold titre-md text-italic">
+    header-class="text-bold title-md text-italic">
     <div>
       <div class="font-mono fs-sm">{{ fst.form.formId }}</div>
 
       <div class="row items-center">
-        <div class="col-5 titre-md text-italic">{{ $t('FORMorg') }}</div>
+        <div class="col-5 title-md text-italic">{{ $t('FORMorg') }}</div>
         <div class="col-7 q-pl-sm font-mono">{{ fst.form.org }}</div>
       </div>
 
       <div class="row items-center">
-        <div class="col-5 titre-md text-italic">{{ $t('FORMsvc') }}</div>
+        <div class="col-5 title-md text-italic">{{ $t('FORMsvc') }}</div>
         <div class="col-7 q-pl-sm font-mono">{{ $t('services_' + fst.form.svc)}}</div>
       </div>
 
       <div v-if="fst.form.v !== 0" class="row items-center">
-        <div class="col-5 titre-md text-italic">{{ $t('FORMversion') }}</div>
+        <div class="col-5 title-md text-italic">{{ $t('FORMversion') }}</div>
         <div class="col-7 q-pl-sm font-mono">{{ dhcool(fst.form.v) }}</div>
       </div>
 
       <div v-if="fst.form.v !== 0" class="row items-center">
-        <div class="col-5 titre-md text-italic">{{ $t('FORMlimit') }}</div>
+        <div class="col-5 title-md text-italic">{{ $t('FORMlimit') }}</div>
         <div class="col-7 q-pl-sm font-mono">{{ dhcool(fst.form.maxLife * 1000) }}</div>
       </div>
 
       <div class="row items-center">
-        <div class="col-5 titre-md text-italic">{{ $t('FORMstatus') }}</div>
+        <div class="col-5 title-md text-italic">{{ $t('FORMstatus') }}</div>
         <div class="col-7 row items-center">
           <q-icon :name="stic[fst.form.status]" :color="stclr[fst.form.status]" size="28px"/>
           <div class="font-mono text-bold" :color="stclr[fst.form.status]">
@@ -37,7 +37,7 @@
       </div>
 
       <div v-if="!fst.isDemand" class="row items-center">
-        <div class="col-5 titre-md text-italic">{{ $t('FORMuser') }}</div>
+        <div class="col-5 title-md text-italic">{{ $t('FORMuser') }}</div>
         <div class="col-7 q-pl-sm font-mono">
           <span>{{ fst.form.userId }}</span>
           <span v-if="fst.form.userId === sf.userId" class="text-bold q-ml-md">[{{ $t('me') }}]</span>
@@ -45,7 +45,7 @@
       </div>
 
       <div v-if="fst.isDemand" class="row items-start">
-        <div class="col-5 titre-md text-italic items-center">
+        <div class="col-5 title-md text-italic items-center">
           <span>{{ $t('FORMcomment') }}</span>
           <btn-cond class="q-ml-sm" icon="edit" round
             @ok="edCom"/>
@@ -99,12 +99,12 @@
   <!-- Messages --------------------------------------------------------------->
   <!--q-expansion-item v-model="exp['msg']" @before-show="fst.expOnShow('msg')"
     :label="$t('FORMmsg')" dense switch-toggle-side class="q-ma-sm full-width"
-    header-class="text-bold titre-md text-italic"-->
+    header-class="text-bold title-md text-italic"-->
   <form-exp name="msg" :label="$t('FORMmsg')">
     <template #default>
     <div class="q-ml-sm">
       <div v-if="fst.visU">
-        <div class="titre-md q-mt-sm">{{  $t('FORMmsg_d') }}</div>
+        <div class="title-md q-mt-sm">{{  $t('FORMmsg_d') }}</div>
         <md-editor v-if="fst.isDemand && fst.form.status <= 2" v-model="fst.upd.msg"
           :lgmax="500" :rows="3" :text="fst.form.msgUS" modetxt editable/>
         <md-editor v-else model="fst.form.msgUS" :rows="3" disable
@@ -112,7 +112,7 @@
       </div>
 
       <div v-if="fst.visT">
-        <div class="titre-md q-mt-sm">{{  $t('FORMmsg_p') }}</div>
+        <div class="title-md q-mt-sm">{{  $t('FORMmsg_p') }}</div>
         <md-editor v-if="!fst.isDemand && fst.form.status <= 2" v-model="fst.upd.msg"
           :lgmax="500" :rows="3" :text="fst.form.msgTS" modetxt editable/>
         <md-editor v-else v-model="fst.form.msgTS" :rows="3" disable

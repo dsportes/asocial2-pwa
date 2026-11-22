@@ -5,15 +5,15 @@
       <q-toolbar>
         <btn-cond color="none" size="lg" icon="chevron_left" flat
           @ok="closeIt"/>
-        <q-toolbar-title class="titre-lg text-right q-mx-sm">{{$t('HPtrustings_1')}}</q-toolbar-title>
+        <q-toolbar-title class="title-lg text-right q-mx-sm">{{$t('HPtrustings_1')}}</q-toolbar-title>
         <btn-bubble :text="$t('HPtrustings_2')"/>
       </q-toolbar>
       <div class="full-width q-pa-sm">
         <div v-if="sf.devName" class="row items-center q-my-sm">
-          <span class="titre-sm text-italic">{{$t('HPterminal')}}</span>
+          <span class="title-sm text-italic">{{$t('HPterminal')}}</span>
           <span class="font-mono fs-sm text-italic q-ml-sm">{{sf.devId.substring(0, 5) + ' [' + sf.devName + ']'}}</span>
         </div>
-        <div class="titre-md q-my-sm">{{ $t('HPtrustings_l', sf.devices.size) }}</div>
+        <div class="title-md q-my-sm">{{ $t('HPtrustings_l', sf.devices.size) }}</div>
         <scroll-area>
         <template #default>
           <div v-for="([id, dev], idx) in sf.devices" :key="id" :class="'row ' + dkli(idx as number)">
