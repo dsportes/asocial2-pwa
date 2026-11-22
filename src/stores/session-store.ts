@@ -21,7 +21,7 @@ export type EdPref = {
 export const useSessionStore = defineStore('session', () => {
 
   const sessionId = computed(() => starter.subsToken.shaS )
-
+  
   /*
   0 : avant login
   1 : authentification faite
@@ -30,7 +30,7 @@ export const useSessionStore = defineStore('session', () => {
   */
   const step: Ref<number> = ref(0)
   const noLocal = ref(false)
-  const noNet = ref(false)
+
   const resetdb = ref(false)
   const okOptions = ref(1)
   const haschgOptions = ref(false)
@@ -46,7 +46,6 @@ export const useSessionStore = defineStore('session', () => {
   const reset = () => {
     step.value = 0
     noLocal.value = false
-    noNet.value = false
     resetdb.value = false
     haschgOptions.value = false
     syncOK.value = true
@@ -64,12 +63,11 @@ export const useSessionStore = defineStore('session', () => {
   })
 
   const hasLocal = computed(() => !noLocal.value)
-  const hasNet = computed(() => !noNet.value)
-  const planeMode = computed(() => noNet.value && !noLocal.value )
-  const syncMode = computed(() => !noNet.value && !noLocal.value )
-  const incMode = computed(() => !noNet.value && noLocal.value )
+  const planeMode = computed(() => !starter.hasNet && !noLocal.value )
+  const syncMode = computed(() => starter.hasNet && !noLocal.value )
+  const incMode = computed(() => starter.hasNet && noLocal.value )
   const loginMode = computed(() =>
-    noLocal.value ? (noNet.value ? 4 : 2) : (noNet.value ? 3 : 1)
+    noLocal.value ? (!starter.hasNet ? 4 : 2) : (!starter.hasNet ? 3 : 1)
   )
 
   const perims: Ref<$Perims> = ref(new Map())
@@ -215,7 +213,7 @@ export const useSessionStore = defineStore('session', () => {
   const credsChange = () => {
     // TOCHECK
     // @ts-expect-error
-    if (sessionId.step >= 1)
+    if (session.step >= 1)
       setTimeout(async () => { await onCredsOptionsChange() }, 1)
   }
 
@@ -225,7 +223,7 @@ export const useSessionStore = defineStore('session', () => {
 
     if (toSave) {
       const _slor = _orgRoles.sort().join(' ')
-      if (hasNet.value) {
+      if (starter.hasNet) {
         const sf = stores.safe
         const opts = sf.mySafeOptions || { pref: '', orgRoles: []}
         const slor = opts.orgRoles.sort().join(' ')
@@ -270,7 +268,7 @@ export const useSessionStore = defineStore('session', () => {
         const org = svcOrg.substring(i + 1)
         /* Supprimer la souscription
         N'étant plus sollicitées, les sync s'arrêteront d'elles-mêmes */
-        if (hasNet) {
+        if (starter.hasNet) {
           const subs = new $Subs()
           await subs.subscribe(svc, org, false)
         }
@@ -411,7 +409,7 @@ export const useSessionStore = defineStore('session', () => {
   const setSvc = (svc: string) => { _currentSvc.value = svc }
 
   return {
-    hasNet, noNet, resetdb, hasLocal, noLocal, planeMode, syncMode, incMode, loginMode, sessionId,
+    resetdb, hasLocal, noLocal, planeMode, syncMode, incMode, loginMode, sessionId,
 
     step, setStep, dialogs,
     syncOK, allOK, netStatus, noDoc,

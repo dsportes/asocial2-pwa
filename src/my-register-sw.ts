@@ -68,9 +68,11 @@ navigator.serviceWorker.onmessage = async (message) => {
       } else if (message.data.type === 'PUSH') {
         if (DEBUG)
           console.log('Notification received by web-push')
+        /* Pour test wptest 
         try {
           const obj = decode(keyFromB64(message.data.payload))
         } catch (e: any) { }
+        */
         if (onPushMessage)
           await onPushMessage(message.data)
       } else {

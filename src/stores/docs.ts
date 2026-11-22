@@ -9,6 +9,7 @@ import { type Ref, ref, reactive } from 'vue'
 import { defineStore } from 'pinia'
 import { encode, decode } from '@msgpack/msgpack'
 
+import { declareOnPushMessage } from '../my-register-sw'
 import { showNotification } from '../starter/util'
 import { appConfig } from '../app/config'
 import stores from '../starter/allstores'
@@ -58,6 +59,9 @@ export async function onPushMsg (payload: string) {
     await showNotification(t, options)
   }
 }
+
+// Hook du register-sw pour transmettre les messages web-push
+declareOnPushMessage(onPushMsg)
 
 export type IDocStore = {
   readonly svc: string

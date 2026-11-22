@@ -1,8 +1,8 @@
 <!-- Component de fixation du mode net ou non -->
 <template>
 <div class="row justify-between items-center q-my-sm">
-  <q-toggle class="col q-pr-md" v-model="session.noNet" dense color="negative"
-    :label="$t('LOGnet_' + (session.noNet ? '2' : '1'))" />
+  <q-toggle class="col q-pr-md" v-model="starter.hasNet" dense color="negative"
+    :label="$t('LOGnet_' + (starter.hasNet ? '1' : '2'))" />
   <btn-bubble class="col-auto self-start"
     :text="$t('LOGnet_3')"/>
 </div>
@@ -12,7 +12,7 @@
 import stores from '../starter/allstores'
 import BtnBubble from '../components-fw/BtnBubble.vue'
 
-const session = stores.session
+const starter = stores.starter
 
 </script>
 

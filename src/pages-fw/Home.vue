@@ -104,19 +104,19 @@ import SafeHeader from './SafeHeader.vue'
 import AdminHeader from './AdminHeader.vue'
 import DemandsHeader from './DemandsHeader.vue'
 import SponsoringsHeader from './SponsoringsHeader.vue'
-import CoredacHeader from './CoredacHeader.vue'
-import CodirHeader from './CodirHeader.vue'
+import CoredacHeader from '../pages/CoredacHeader.vue'
+import CodirHeader from '../pages/CodirHeader.vue'
 
-import AuteurHeader from './AuteurHeader.vue'
+import AuteurHeader from '../pages/AuteurHeader.vue'
 
 import SafeHome from './SafeHome.vue'
 import AdminPage from './AdminPage.vue'
 import DemandsPage from './DemandsPage.vue'
 import SponsoringsPage from './SponsoringsPage.vue'
-import CoredacPage from './CoredacPage.vue'
-import CodirPage from './CodirPage.vue'
+import CoredacPage from '../pages/CoredacPage.vue'
+import CodirPage from '../pages/CodirPage.vue'
 
-import AuteurPage from './AuteurPage.vue'
+import AuteurPage from '../pages/AuteurPage.vue'
 import TestPage from './TestPage.vue'
 
 import NetStatusdial from '../dialogs-fw/NetStatusdial.vue'
@@ -139,7 +139,7 @@ import { FWreport } from '../src-fw/fwdocuments'
 // import { appConfig } from '../app/config'
 import { $t } from '../starter/util'
 
-console.log($t('hello'), $t('world'))
+// console.log($t('hello'), $t('world'))
 
 const hdrPages = ref(new Set(['test']))
 

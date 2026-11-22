@@ -25,12 +25,12 @@ tous les dialogues de gestion des "dsonnées de sécurité".
 
       <bar-open :bubble="$t('SFTalias_bub')" :disbubble="$t('SFTalias_bub')"
         :title="$t('SFTalias_label')"
-        :disable="session.noNet"
+        :disable="!starter.hasNet"
         @open="dialogs.SafeCrA = true"/>
 
       <bar-open :bubble="$t('SFTphrase_bub')" :disbubble="$t('SFTphrase_bub')"
         :title="$t('SFTphrase_label')"
-        :disable="session.noNet"
+        :disable="!starter.hasNet"
         @open="dialogs.SafeCrP = true"/>
 
       <q-separator color="primary" class="q-my-xs q-mx-lg"/>
@@ -49,11 +49,11 @@ tous les dialogues de gestion des "dsonnées de sécurité".
 
       <bar-open :bubble="$t('HPtrustings_2')" :disbubble="$t('HPtrustings_2')"
         :title="$t('HPtrustings_1')"
-        :disable="session.noNet"
+        :disable="!starter.hasNet"
         @open="dialogs.DevTrustings = true"/>
 
       <bar-open :bubble="$t('HPmanuinfo')"
-        :disable="session.noNet"
+        :disable="!starter.hasNet"
         :title="$t('HPmanusers')"
         @open="dialogs.ManageUsers = true"/>
 
@@ -61,24 +61,24 @@ tous les dialogues de gestion des "dsonnées de sécurité".
 
       <bar-open :bubble="$t('CRRtit_bub')" :disbubble="$t('CRRtit_bub')"
         :title="$t('CRRtit_label')"
-        :disable="session.noNet"
+        :disable="!starter.hasNet"
         @open="dialogs.CredsReview = true"/>
 
       <bar-open :bubble="$t('HPprefs_2')" :disbubble="$t('HPprefs_2')"
         :title="$t('HPprefs_1')"
-        :disable="session.noNet"
+        :disable="!starter.hasNet"
         @open="dialogs.PrefsMgr = true"/>
 
       <q-separator color="orange" class="q-my-xs"/>
       <div class="titre-md text-italic text-bold text-warning text-center">{{ $t('SFTopal') }}</div>
 
       <bar-open :bubble="$t('HPexpsafe_2')"
-        :disable="session.noNet"
+        :disable="!starter.hasNet"
         :title="$t('HPexpsafe_1')"
         @open="dialogs.SafeExport = true"/>
 
       <bar-open :bubble="$t('HPdelsafe_2')" :disbubble="$t('HPdelsafe_3')"
-        :disable="session.noNet"
+        :disable="!starter.hasNet"
         :title="$t('HPdelsafe_1')"
         @open="dialogs.delSafe = true"/>
 
