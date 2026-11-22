@@ -69,20 +69,20 @@ Contrôlé par ui.leftMenu
 </template>
 
 <script setup lang="ts" vapor>
-import { computed, inject } from 'vue'
-import stores from '../starter/allstores'
-import { sty } from '../src-fw/util'
+import { computed } from 'vue'
+import stores from '../starter/allstores.ts'
+import { sty } from '../src-fw/util.ts'
 // import { ErrorTest } from '../src-fw/operations'
-import HelpButton from './HelpButton.vue'
-import BtnCond from './BtnCond.vue'
-import SafeTools from './SafeTools.vue'
+import HelpButton from '../components-fw/HelpButton.vue'
+import BtnCond from '../components-fw/BtnCond.vue'
+import SafeTools from '../components-fw/SafeTools.vue'
 import SelectOptionsdial from '../dialogs-fw/SelectOptionsdial.vue'
 
 import superman from '../assets/img/superman.jpg'
 import invitation from '../assets/invitation.png'
 // import { appConfig } from '../app/config'
 
-import { $t } from '../starter/util'
+import { $t } from '../starter/util.ts'
 
 const sf = stores.safe
 const ui = stores.ui

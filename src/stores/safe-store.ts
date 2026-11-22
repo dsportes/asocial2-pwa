@@ -925,7 +925,7 @@ export const useSafeStore = defineStore('safe', () => {
 
       const t = trustings.value.get(userId.value)
       if (!t && session.hasLocal)
-        session.noLocal = true
+        session.hasLocal = false
 
       try {
         keyK.value = await Crypt.decrypt(x, keyFromB64(K)) || undefined
@@ -1169,7 +1169,7 @@ export const useSafeStore = defineStore('safe', () => {
     }
     if (!ret.status) {
       if (!session.hasLocal)
-        session.noLocal = false
+        session.hasLocal = true
       await compileSafe(ret.safe)
     }
     return ret.status
@@ -1188,7 +1188,7 @@ export const useSafeStore = defineStore('safe', () => {
 
     await IDBsafe.delTrusting(t.userId)
     if (session.hasLocal)
-      session.noLocal = true
+      session.hasLocal = false
 
     const untrustDev: UntrustDev = {
       userId: userId.value,

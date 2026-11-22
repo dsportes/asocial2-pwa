@@ -44,14 +44,14 @@ const starter = stores.starter
 const props = defineProps<{
   inverse?: boolean,
   height?: string,
-  text: string, // texte MD à afficher
+  text: string // texte MD à afficher
 }>()
 
 const text2 = () => {
   return props.text ? props.text.replaceAll('href="$$/', 'href="' + url) : ''
 }
 
-const dark = ref(starter.isDark && !props.inverse)
+const dark = ref(!props.inverse ? starter.isDark : !starter.isDark)
 
 </script>
 

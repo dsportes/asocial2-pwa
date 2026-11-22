@@ -8,6 +8,7 @@ export const frMsg = {
   gotit: 'J\'ai compris !',
   later: 'Plus tard',
   pleasewait: 'Merci d\'attentre quelques secondes ...',
+  darkclear: 'Sombre / clair',
 
   quoi: 'Quoi ${0} ???',
 
@@ -50,7 +51,6 @@ export const frMsg = {
   site: 'Site',
   org: 'Organisation',
 
-  darkclear: 'Foncé / clair',
   ok: 'OK',
   me: 'moi',
   planemode: 'Mode Avion',
@@ -226,7 +226,7 @@ export const frMsg = {
   PAGEadmin_bub: `### Administration Technique
 bla bla
 `,
-  PAGEsafeHome_label: 'Connexion et ouverture de session',
+  PAGEsafeHome_label: 'Connexion, ouverture de session',
   PAGEsafeHome_bub: `### Connexion et ouverture de session
 bla bla
 `,

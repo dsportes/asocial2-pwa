@@ -133,8 +133,8 @@ tous les dialogues de gestion des "dsonnées de sécurité".
 <script setup lang="ts" vapor>
 import { reactive, inject } from 'vue'
 
-import stores from '../starter/allstores'
-import { sty } from '../src-fw/util'
+import stores from '../starter/allstores.ts'
+import { sty } from '../src-fw/util.ts'
 
 import BtnCond from '../components-fw/BtnCond.vue'
 import BarOpen from '../components-fw/BarOpen.vue'
@@ -152,10 +152,13 @@ import SelectOptionsdial from '../dialogs-fw/SelectOptionsdial.vue'
 
 import skull from '../assets/skull.png'
 import safebox from '../assets/safe-box.png'
+// import { appConfig } from '../app/config'
 
-import { $t } from '../starter/util'
+import { $t } from '../starter/util.ts'
+
 const ui = stores.ui
 const session = stores.session
+const starter = stores.starter
 const sf = stores.safe
 
 const emit = defineEmits(['close'])

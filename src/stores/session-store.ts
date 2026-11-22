@@ -22,6 +22,8 @@ export const useSessionStore = defineStore('session', () => {
 
   const sessionId = computed(() => starter.subsToken.shaS )
   
+  const hasLocal = ref(true)
+
   /*
   0 : avant login
   1 : authentification faite
@@ -29,7 +31,6 @@ export const useSessionStore = defineStore('session', () => {
   3 : session ouverte
   */
   const step: Ref<number> = ref(0)
-  const noLocal = ref(false)
 
   const resetdb = ref(false)
   const okOptions = ref(1)
@@ -45,7 +46,7 @@ export const useSessionStore = defineStore('session', () => {
 
   const reset = () => {
     step.value = 0
-    noLocal.value = false
+    hasLocal.value = true
     resetdb.value = false
     haschgOptions.value = false
     syncOK.value = true
@@ -62,12 +63,11 @@ export const useSessionStore = defineStore('session', () => {
     }
   })
 
-  const hasLocal = computed(() => !noLocal.value)
-  const planeMode = computed(() => !starter.hasNet && !noLocal.value )
-  const syncMode = computed(() => starter.hasNet && !noLocal.value )
-  const incMode = computed(() => starter.hasNet && noLocal.value )
+  const planeMode = computed(() => !starter.hasNet && hasLocal.value )
+  const syncMode = computed(() => starter.hasNet && hasLocal.value )
+  const incMode = computed(() => starter.hasNet && !hasLocal.value )
   const loginMode = computed(() =>
-    noLocal.value ? (!starter.hasNet ? 4 : 2) : (!starter.hasNet ? 3 : 1)
+    !hasLocal.value ? (!starter.hasNet ? 4 : 2) : (!starter.hasNet ? 3 : 1)
   )
 
   const perims: Ref<$Perims> = ref(new Map())
@@ -409,7 +409,7 @@ export const useSessionStore = defineStore('session', () => {
   const setSvc = (svc: string) => { _currentSvc.value = svc }
 
   return {
-    resetdb, hasLocal, noLocal, planeMode, syncMode, incMode, loginMode, sessionId,
+    resetdb, hasLocal, planeMode, syncMode, incMode, loginMode, sessionId,
 
     step, setStep, dialogs,
     syncOK, allOK, netStatus, noDoc,

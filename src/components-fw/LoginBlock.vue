@@ -4,7 +4,7 @@ Event émis: logged
 <template>
 <div class="q-ma-xs q-pa-xs">
 
-  <div v-if="!starter.hasNet && session.noLocal"
+  <div v-if="!starter.hasNet && !session.hasLocal"
     class="row full-width items-center q-my-sm q-gutter-sm">
     <btn-bubble :text="$t('LOGcalc_bub')"/>
     <btn-cond :label="$t('LOGcalc_label')" no-caps icon="calculate"

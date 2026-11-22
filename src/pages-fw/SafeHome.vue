@@ -1,6 +1,6 @@
 <template>
 <div class="column items-center">
-  <div :class="sty('md')">
+  <div :class="sty('sm') + ' q-pa-xs'">
     <div v-if="ui.loginPage.tab === 'login' && session.step === 0">
       <mode-net/>
       <mode-local/>

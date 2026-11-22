@@ -95,33 +95,33 @@
 <script setup lang="ts" vapor>
 import { ref, onMounted } from 'vue'
 
-import stores from '../starter/allstores'
+import stores from '../starter/allstores.ts'
 
-import { sty } from '../src-fw/util'
+import { sty } from '../src-fw/util.ts'
 
 import StdHeader from '../components-fw/StdHeader.vue'
-import SafeHeader from './SafeHeader.vue'
-import AdminHeader from './AdminHeader.vue'
-import DemandsHeader from './DemandsHeader.vue'
-import SponsoringsHeader from './SponsoringsHeader.vue'
+import SafeHeader from '../pages-fw/SafeHeader.vue'
+import AdminHeader from '../pages-fw/AdminHeader.vue'
+import DemandsHeader from '../pages-fw/DemandsHeader.vue'
+import SponsoringsHeader from '../pages-fw/SponsoringsHeader.vue'
 import CoredacHeader from '../pages/CoredacHeader.vue'
 import CodirHeader from '../pages/CodirHeader.vue'
 
 import AuteurHeader from '../pages/AuteurHeader.vue'
 
-import SafeHome from './SafeHome.vue'
-import AdminPage from './AdminPage.vue'
-import DemandsPage from './DemandsPage.vue'
-import SponsoringsPage from './SponsoringsPage.vue'
+import SafeHome from '../pages-fw/SafeHome.vue'
+import AdminPage from '../pages-fw/AdminPage.vue'
+import DemandsPage from '../pages-fw/DemandsPage.vue'
+import SponsoringsPage from '../pages-fw/SponsoringsPage.vue'
 import CoredacPage from '../pages/CoredacPage.vue'
 import CodirPage from '../pages/CodirPage.vue'
 
 import AuteurPage from '../pages/AuteurPage.vue'
-import TestPage from './TestPage.vue'
+import TestPage from '../pages-fw/TestPage.vue'
 
 import NetStatusdial from '../dialogs-fw/NetStatusdial.vue'
 
-import LeftMenu from '../components-fw/LeftMenu.vue'
+import LeftMenu from '../components/LeftMenu.vue'
 
 import GotIt from '../dialogs-fw/GotIt.vue'
 import ConfirmQuit from '../dialogs-fw/ConfirmQuit.vue'
@@ -131,13 +131,13 @@ import ConfirmClosesession from '../dialogs-fw/ConfirmClosesession.vue'
 import DialogExc from '../dialogs-fw/DialogExc.vue'
 import DialogHelp from '../dialogs-fw/DialogHelp.vue'
 
-import { AS2report } from '../as2/documents'
-import { AS2FormsReport } from '../as2/forms'
-import { AS2CredentialsReport } from '../as2/credentials'
-import { FWreport } from '../src-fw/fwdocuments'
+import { AS2report } from '../as2/documents.ts'
+import { AS2FormsReport } from '../as2/forms.ts'
+import { AS2CredentialsReport } from '../as2/credentials.ts'
+import { FWreport } from '../src-fw/fwdocuments.ts'
 
 // import { appConfig } from '../app/config'
-import { $t } from '../starter/util'
+import { $t } from '../starter/util.ts'
 
 // console.log($t('hello'), $t('world'))
 
@@ -175,7 +175,7 @@ onMounted(async () => { // Sur onMounted parce que async
 .ano-b, .ano-w {
   background-position: center center;
   background-repeat: no-repeat;
-  background-size:contain;
+  background-size: 30%;
 }
 .ano-b {
   background-image: url('../assets/anonymous-bt.svg');

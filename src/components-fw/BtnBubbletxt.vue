@@ -22,7 +22,7 @@ L'image doit figurer dans public/images
         <q-icon name="question_mark" class="q-mr-xs col-auto"
           :color="!starter.isDark ? 'indigo-2' : 'indigo-9'"
           size="20px">
-          <q-menu auto-close :class="(starter.isDark ? 'clear' : 'dark')"
+          <q-menu auto-close
             anchor="center middle" self="center middle"
             style="height: 300px; max-height:70vh; width: 400px; max-width:90vw">
             <scroll-md height="300px" :text="bub" inverse />

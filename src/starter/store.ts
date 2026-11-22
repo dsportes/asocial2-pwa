@@ -1,4 +1,4 @@
-import { ref, type Ref, watch, reactive, type Reactive } from 'vue'
+import { ref, type Ref, watch, reactive, type Reactive, computed } from 'vue'
 import { usePermission, useWindowSize } from '@vueuse/core'
 import { defineStore } from 'pinia'
 
@@ -61,7 +61,7 @@ export const useStarterStore = defineStore('starter', () => {
   }
 
   /* Retourne true si le mode sombre est actif (réactif) */
-  const isDark = () =>  $q.dark.isActive
+  const isDark = computed(() =>  $q.dark.isActive)
 
   /* Retourne l'option de la langue citée, ou celle par défaut si elle n'est pas installée */
   const getLangOption = (lang: string) : LangOption => {

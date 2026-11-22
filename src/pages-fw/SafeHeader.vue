@@ -1,6 +1,6 @@
 <template>
 <div>
-  <std-header :title="tit"/>
+  <std-header :title="$t('PAGEsafeHome_label')"/>
 
   <q-tabs v-if="session.step === 0" dense v-model="ui.loginPage.tab" breakpoint="2000px"
     class="full-width bg-primary text-white shadow-2">
@@ -29,8 +29,6 @@
 </template>
 
 <script setup lang="ts" vapor>
-import { computed, inject } from 'vue'
-
 import stores from '../starter/allstores'
 import StdHeader from '../components-fw/StdHeader.vue'
 import BtnCond from '../components-fw/BtnCond.vue'
@@ -45,8 +43,8 @@ import { $t } from '../starter/util'
 const session = stores.session
 const ui = stores.ui
 
-const step = async (s: number) => { await session.setStep(s) }
-const tit = computed(() => $t('PAGEsafeHome_label') + '-' + session.step )
+const step = async (s: number) => { 
+  await session.setStep(s) }
 
 const trigOptions = () => { session.okOptions = session.okOptions + 1 }
 

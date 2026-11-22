@@ -11,13 +11,13 @@
           clickable dense v-close-popup
           class="bg-negative text-white">
           <q-item-section avatar><q-avatar size="xl" icon="system_update"/></q-item-section>
-          <q-item-section class="fs-lg">{{$t('RLtit1')}}</q-item-section>
+          <q-item-section class="fs-md">{{$t('RLtit1')}}</q-item-section>
         </q-item>
         <q-separator v-if="session.newVersionReady"/>
 
         <q-item clickable dense v-close-popup @click="ui.openHelp('topHelp')">
           <q-item-section avatar><q-avatar size="xl" icon="help"/></q-item-section>
-          <q-item-section class="fs-lg">{{$t('genhelp')}}</q-item-section>
+          <q-item-section class="fs-md">{{$t('genhelp')}}</q-item-section>
         </q-item>
 
         <q-separator />
@@ -25,19 +25,19 @@
         <q-item v-for="opt of appConfig.LANGOPTIONS" :key="opt.value" dense
           :class="cl(opt) + ' text-center'"
           @click="choix(opt)" clickable v-close-popup>
-          <q-item-section class="fs-lg">{{opt.label}}</q-item-section>
+          <q-item-section class="fs-md">{{opt.label}}</q-item-section>
         </q-item>
 
         <q-separator />
 
         <q-item clickable dense v-close-popup @click="starter.setDark(!starter.isDark)">
           <q-item-section avatar><q-avatar size="xl" icon="contrast"/></q-item-section>
-          <q-item-section class="fs-lg">{{$t('darkclear')}}</q-item-section>
+          <q-item-section class="fs-md">{{$t('darkclear')}}</q-item-section>
         </q-item>
 
         <q-item clickable dense v-close-popup @click="dialogs.theme = true">
           <q-item-section avatar><q-avatar size="xl" icon="palette"/></q-item-section>
-          <q-item-section class="fs-lg">{{$t('theme')}}</q-item-section>
+          <q-item-section class="fs-md">{{$t('theme')}}</q-item-section>
         </q-item>
 
         <q-separator v-if="session.step === 3"/>
@@ -45,37 +45,37 @@
         <q-item v-if="session.step > 0" @click="dialogs.userProfile = true"
           clickable dense v-close-popup>
           <q-item-section avatar><q-avatar size="xl" icon="person"/></q-item-section>
-          <q-item-section class="fs-lg">{{$t('SButtitle')}}</q-item-section>
+          <q-item-section class="fs-md">{{$t('SButtitle')}}</q-item-section>
         </q-item>
 
         <q-item v-if="session.step > 0" @click="dialogs.edprf = true"
           clickable dense v-close-popup>
           <q-item-section avatar><q-avatar size="xl" icon="settings"/></q-item-section>
-          <q-item-section class="fs-lg">{{$t('settings')}}</q-item-section>
+          <q-item-section class="fs-md">{{$t('settings')}}</q-item-section>
         </q-item>
 
         <q-separator />
 
         <q-item clickable dense v-close-popup @click="dialogs.ServiceStatus = true">
           <q-item-section avatar><q-avatar size="xl" icon="cloud"/></q-item-section>
-          <q-item-section class="fs-lg">{{$t('servicestatus')}}</q-item-section>
+          <q-item-section class="fs-md">{{$t('servicestatus')}}</q-item-section>
         </q-item>
 
         <q-item clickable dense v-close-popup @click="dialogs.crypto = true">
           <q-item-section avatar><q-avatar size="xl" icon="key"/></q-item-section>
-          <q-item-section class="fs-lg">{{$t('crypto')}}</q-item-section>
+          <q-item-section class="fs-md">{{$t('crypto')}}</q-item-section>
         </q-item>
 
         <q-separator/>
 
         <q-item v-if="session.step === 3" clickable dense v-close-popup @click="ui.sessionClose">
           <q-item-section avatar><q-avatar size="xl" icon="exit_to_app"/></q-item-section>
-          <q-item-section class="fs-lg">{{$t('endsession')}}</q-item-section>
+          <q-item-section class="fs-md">{{$t('endsession')}}</q-item-section>
         </q-item>
 
         <q-item clickable dense v-close-popup @click="ui.confirmQuit">
           <q-item-section avatar><q-avatar size="xl" icon="close"/></q-item-section>
-          <q-item-section class="fs-lg">{{$t('closeApp')}}</q-item-section>
+          <q-item-section class="fs-md">{{$t('closeApp')}}</q-item-section>
         </q-item>
 
         <q-separator />
@@ -470,10 +470,11 @@ watch(tab, (t) => {
   if (t === 'hot') resetHot()
 })
 
-const cl = (lg: LangOption) => starter.curLangOption.value === lg.value ? 'disabled' : ''
+const cl = (lg: LangOption) => 
+  starter.curLangOption.value === lg.value ? 'disabled' : ''
 
 const choix = (lg: LangOption) : void => {
-  starter.setLocale(lg.value)
+  starter.setLang(lg.value)
 }
 
 // @ts-expect-error
