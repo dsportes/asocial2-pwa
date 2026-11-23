@@ -1,16 +1,17 @@
 <template>
 <q-layout view="hHh lpR fFf">
   <q-header>
-    <std-header v-if="hdrPages.has(ui.page)"/>
-    <safe-header v-if="ui.page === 'safeHome'"/>
-    <admin-header v-if="ui.page === 'admin'"/>
-    <demands-header v-if="ui.page === 'demands'"/>
-    <sponsorings-header v-if="ui.page === 'sponsorings'"/>
-    <auteur-header v-if="ui.page === 'auteur'"/>
-    <coredac-header v-if="ui.page === 'coredac'"/>
-    <codir-header v-if="ui.page === 'codir'"/>
+    <std-header v-if="!new Set(['safeHome', 'admin', 'demands', 'sponsorings', 'auteur', 'coredac', 'codir']).has(ui.page)"/>
+    <div v-else>
+      <safe-header v-if="ui.page === 'safeHome'"/>
+      <admin-header v-if="ui.page === 'admin'"/>
+      <demands-header v-if="ui.page === 'demands'"/>
+      <sponsorings-header v-if="ui.page === 'sponsorings'"/>
+      <auteur-header v-if="ui.page === 'auteur'"/>
+      <coredac-header v-if="ui.page === 'coredac'"/>
+      <codir-header v-if="ui.page === 'codir'"/>
+    </div>
   </q-header>
-
   <q-drawer v-if="session.step === 2" v-model="ui.leftMenu" :class="sty()"
     show-if-above :width="350" :breakpoint="700" elevated >
     <left-menu/>
@@ -18,7 +19,6 @@
 
   <q-page-container class="font-def">
     <transition name="anim1">
-      <!-- :class="'column ano-' + ($q.dark.isActive ? 'w' : 'b')" -->
       <q-page v-if="ui.page === 'safeHome'"
         style="display:grid;min-height:80vh;place-items:center;margin:0">
         <safe-home/>
@@ -47,18 +47,18 @@
     </transition>
     <transition name="anim1">
       <q-page v-if="ui.page === 'codir'">
-            <q-resize-observer @resize="ui.setPh" />
+        <q-resize-observer @resize="ui.setPh" />
         <codir-page/>
       </q-page>
     </transition>    
     <transition name="anim1">
       <q-page v-if="ui.page === 'auteur'">
-            <q-resize-observer @resize="ui.setPh" />
+        <q-resize-observer @resize="ui.setPh" />
         <auteur-page/>
       </q-page>
     </transition>
     <transition name="anim1">
-      <q-page v-if="ui.page === 'app'" :class="'ano-' + ($q.dark.isActive ? 'w' : 'b')">
+      <q-page v-if="ui.page === 'app'" :class="ano">
         <!--div class="title-xxl">Hello world</div-->
       </q-page>
     </transition>
@@ -82,7 +82,7 @@
 </template>
 
 <script setup lang="ts" vapor>
-import { ref, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 
 import stores from '../starter/allstores.ts'
 
@@ -126,14 +126,14 @@ import { AS2CredentialsReport } from '../as2/credentials.ts'
 import { FWreport } from '../src-fw/fwdocuments.ts'
 
 // import { appConfig } from '../app/config'
-import { $t } from '../starter/util.ts'
-
+// import { $t } from '../starter/util.ts'
 // console.log($t('hello'), $t('world'))
-
-const hdrPages = ref(new Set(['test']))
 
 const session = stores.session
 const ui = stores.ui
+const starter = stores.starter
+
+const ano = computed(() => 'ano-' + (starter.isDark ? 'w' : 'b'))
 
 {
   let exc = AS2report()
@@ -147,7 +147,7 @@ const ui = stores.ui
 }
 
 onMounted(async () => { // Sur onMounted parce que async
-  await stores.session.setStep(0)
+  await session.setStep(0)
 })
 
 </script>

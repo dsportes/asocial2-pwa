@@ -111,7 +111,9 @@ const fill = (v: string | undefined) => {
 }
 
 const hasInitVal = computed(() => props.initval && props.initval.length )
-const chg = computed(() => !props.disable && hasInitVal.value && props.initval !== model.value)
+const chg = computed(() => 
+  (!props.initval && model.value && model.value.length) || 
+  ( props.initval !== model.value))
 const hint = computed(() =>
   $t('minmax', sz.value) + (!err.value && !nv.value ? $t('pressret') : ''))
 const undo = () => {

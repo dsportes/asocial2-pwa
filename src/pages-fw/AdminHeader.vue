@@ -2,7 +2,8 @@
 <div>
   <std-header>
     <template #btn>
-      <q-icon v-if="ui.adminPage.mdAdmin" name="security" color="negative" size="28px"/>
+      <btn-bubble v-if="ui.adminPage.mdAdmin"
+        icon="security" color="warning" :text="'## ' + $t('SFTmdAdmin')"/>
     </template>
   </std-header>
 
@@ -33,12 +34,13 @@
 </template>
 
 <script setup lang="ts" vapor>
-import { onMounted, inject } from 'vue'
+import { onMounted } from 'vue'
 
 import { type SOA } from '../src-fw/base'
 import stores from '../starter/allstores'
 import StdHeader from '../components-fw/StdHeader.vue'
 import { isMDAdmin } from '../src-fw/operation'
+import BtnBubble from '../components-fw/BtnBubble.vue'
 import SelectSvcorg from '../components-fw/SelectSvcorg.vue'
 import BtnCond from '../components-fw/BtnCond.vue'
 import { sty } from '../src-fw/util'

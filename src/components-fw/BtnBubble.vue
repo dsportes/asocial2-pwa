@@ -18,10 +18,10 @@ L'image doit figurer dans public/images
 -->
 <template>
   <q-btn round padding="none"
-    icon="question_mark" 
-    :color="!$q.dark.isActive || clear ? 'indigo-2' : 'indigo-9'" 
+    :icon="icon || 'question_mark'" 
+    :color="color || (!starter.isDark || clear ? 'indigo-2' : 'indigo-9')" 
     size="md">
-    <q-menu auto-close :class="($q.dark.isActive ? 'clear' : 'dark')"
+    <q-menu auto-close :class="(starter.isDark ? 'clear' : 'dark')"
       anchor="center middle" self="center middle"
       style="height: 300px; max-height:70vh; width: 400px; max-width:90vw">
       <scroll-md height="300px" :text="text" inverse />
@@ -31,11 +31,16 @@ L'image doit figurer dans public/images
 
 <script setup lang="ts" vapor>
 import ScrollMd from '../components-fw/ScrollMd.vue'
+import stores from '../starter/allstores'
 
 const props = defineProps<{ 
   text: string, // texte MD à afficher
+  icon?: string,
+  color?: string,
   clear?: boolean
 }>()
+
+const starter = stores.starter
 
 </script>
 
