@@ -1,7 +1,7 @@
   <!-- Information / option d'installation d'une nouvelle version -->
 <template>
   <q-dialog v-model="starter.newVersionDialog" persistent>
-    <q-card class="mwsm">
+    <q-card class="wsm">
       <q-toolbar class="tbp">
         <q-btn icon="close" flat size="md" color="warning" padding="none"
           class="font-mono" :label="$t('later')"

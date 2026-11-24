@@ -264,10 +264,6 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
     */
     const colls = reactive({  } as any)
 
-    const reset = () => {
-      
-    }
-
     const getXref = (def: $Def) : Set<string> => {
       return stores.session.getXref(svc, org, def)
     }
@@ -671,7 +667,7 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
 
     const areSubsTodo = () : boolean => {
       for(const x in activePerims)
-        if (activePerims[x] < 2) return true
+        if (activePerims[x].status < 2) return true
       return false
     }
 

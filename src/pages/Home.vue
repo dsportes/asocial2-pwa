@@ -41,7 +41,7 @@
     </transition>
     <transition name="anim1">
       <q-page v-if="ui.page === 'coredac'">
-            <q-resize-observer @resize="ui.setPh" />
+        <q-resize-observer @resize="ui.setPh" />
         <coredac-page/>
       </q-page>
     </transition>

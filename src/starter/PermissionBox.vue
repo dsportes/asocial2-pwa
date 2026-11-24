@@ -2,7 +2,7 @@
  et d'erreur d'acquisition du token webpush -->
 <template>
 <q-dialog v-model="starter.permDialog" persistent>
-<q-card class="mwsm">
+<q-card class="wsm">
   <q-toolbar class="tbp">
     <q-toolbar-title v-if="starter.subsToken.err" class="font-title fs-md">{{$t('PERM_err')}}</q-toolbar-title>
     <q-toolbar-title v-else class="font-title fs-md">

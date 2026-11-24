@@ -162,7 +162,9 @@ const hasInitVal = computed(() => props.initval && props.initval.length )
 
 if (hasInitVal.value && props.initval && model.value) model.value.inp = props.initval
 
-const chg = computed(() => model.value && !props.disable && hasInitVal.value && props.initval !== model.value.inp)
+const chg = computed(() => 
+  (!props.initval && model.value && model.value.inp.length) || 
+  ( model.value && props.initval !== model.value.inp))
 const hint = computed(() =>
   $t('minmax', sz.value) + (model.value && !model.value.err && !nv.value ? $t('pressret') : ''))
 const undo = () => {

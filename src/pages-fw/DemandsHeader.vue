@@ -19,7 +19,7 @@
     </div>
   </div>
 
-  <dialog-std0 v-if="dialogs.newdemand" v-model="dialogs.newdemand" width="mwsm" vh="80"
+  <dialog-std0 v-if="dialogs.newdemand" v-model="dialogs.newdemand" width="wsm" vh="80"
     :title="$t('FORMnewd', [$t('TYPE_' + formType.svc + '_' + formType.type).substring(2)])"
     hdrclass="tbs" vue="DemandsHeader" @close="close">
     <template #default>

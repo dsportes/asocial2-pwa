@@ -1,13 +1,13 @@
 <template>
 <div class="column items-center q-pa-xs">
 
-  <div v-if="adp.tab === 'sites'" class="mwsm">
+  <div v-if="adp.tab === 'sites'" class="wsm">
     <text-zoom class="q-my-md q-mr-md" :label="$t('APsvclabels')"
       :text="edLabels" :rows="15" :checklabel="$t('record')" :zctrl="zctrl"
       :rw="adp.mdAdmin" @done="saveLabels"/>
 
     <div class="title-md text-italic q-mb-sm">{{ $t(sites.size ? 'APsites' : 'APnosites') }}</div>
-    <scroll-area size="sm" class="mwsm">
+    <scroll-area size="sm" class="wsm">
       <div v-for="([site, url], idx) of sites" :key="site"
         :class="'row items-center cursor-pointer ' + dkli(idx) + (site === ui.adminPage.site ? ' current': ' nocurrent')"
         @click="setCurSite(site)">
@@ -105,7 +105,7 @@
     @giveup="confirmDS(0)"
     @option="confirmDS"/>
 
-  <div v-if="adp.tab === 'orgs' && ui.adminPage.soa" class="mwmd">
+  <div v-if="adp.tab === 'orgs' && ui.adminPage.soa" class="wmd">
     <status-site v-if="ui.adminPage.soa.site" v-model="ui.adminPage.soa" class="q-mt-md"/>
 
     <div v-if="ui.adminPage.soa.site" class="q-my-sm title-md">
@@ -124,7 +124,8 @@
     </div>
   </div>
 
-  <div v-if="ui.adminPage.tab === 'managers' && ui.adminPage.soa && ui.adminPage.soa.svc && ui.adminPage.soa.org" class="mwmd">
+  <div v-if="ui.adminPage.tab === 'managers' && ui.adminPage.soa && ui.adminPage.soa.svc && ui.adminPage.soa.org" 
+    class="wmd">
     <div v-if="!lstMgr.length" class="titre_md text-italic">{{ $t('APnomanagers') }}</div>
 
     <div v-else class="q-my-xs" v-for="(m, idx) in lstMgr" :key="m.credId" :class="dkli(idx)">

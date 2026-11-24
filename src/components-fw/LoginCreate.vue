@@ -9,7 +9,7 @@
 
   <div class="column items-center">
     <select-site class="mwxxs q-my-md" v-if="adm" v-model="site"/>
-    <input-a v-if="!adm || site" class="mwsm q-my-md"
+    <input-a v-if="!adm || site" class="wsm q-my-md"
       :prefix="adm ? 'LOGcreate_pwd' : 'LOGcreate_inv'" 
       size="ps" v-model="invitCode" @validate="onCode"/>
     <div class="mwxs font-mono q-my-sm">{{ userId }}</div>

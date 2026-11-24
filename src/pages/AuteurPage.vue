@@ -1,7 +1,7 @@
 <template>
 <div>
 <div v-if="ui.appPage.tab === 'auteurs'" class="column items-center">
-  <q-splitter v-model="splitterModel" horizontal class="mwsm" :style="sth">
+  <q-splitter v-model="splitterModel" horizontal class="wsm" :style="sth">
     <template v-slot:before>
       <div v-if="starter.hasNet" v-for="([, c], idx) in creds" :key="c.credId"
         :class="'cursor-pointer q-my-sm select ' + dkli(idx)"
@@ -127,7 +127,7 @@
 </template>
 
 <script setup lang="ts" vapor>
-import { ref, type Ref, computed, onMounted, watch, reactive, inject } from 'vue'
+import { ref, type Ref, computed, onMounted, watch, reactive } from 'vue'
 import stores from '../starter/allstores'
 import { $Credential } from '../src-fw/documents'
 import { $Perimeter } from '../src-fw/subscription'

@@ -20,9 +20,9 @@ Events: close done
 
 <template #default>
   <div class="column items-center">
-    <div class="mwsm q-pa-xs">
+    <div class="wsm q-pa-xs">
     <div class="q-my-md text-center title-md">{{$t('HPprefslist')}}</div>
-    <scroll-area class='mwsm'><template #default>
+    <scroll-area class='wsm'><template #default>
       <div :class="dkli(idx as number)" v-for="(code, idx) of st" :key="code">
         <div :class="pSel(code) + 'row q-my-xs cursor-pointer select'"
           @click="selPref(code)">
