@@ -55,7 +55,8 @@ export class AS2$Credential_Auteur extends $Credential {
 
   getPerimeters () : $Perimeter[] {
     return [
-      new $Perimeter(this.svc, this.org, '', 'Auteur', this.docPk, 'AS2_auteurs', true, ['Auteur/' + this.docPk], this.name )
+      new $Perimeter(this.svc, this.org, '', 'Auteur', this.docPk, 'AS2_auteurs', 
+        true, ['Auteur/' + this.docPk], this.name )
     ]
   }
   get hasDispProps () { return true }

@@ -185,12 +185,13 @@ export class $Subs extends $Document {
 
   /* Enregistrement de la souscription au serveur */
   async subscribe (svc: string, org: string, longLife: boolean) : Promise<boolean> {
-    const session = stores.session
+    const starter = stores.starter
+    const token = await starter.getSubsToken()
     const op = new Operation('FW$setSubscription', svc, org)
     try {
       op.args.subscription = {
-        sessionId: session.sessionId,
-        subJSON: session.subJSON,
+        sessionId: token.shaS,
+        subJSON: token.json,
         url: this.url || appConfig.LOCATION,
         title: this.title || (appConfig.APPNAME + ' - ' + op.args.org),
         defs: this.defs,

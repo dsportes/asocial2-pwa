@@ -53,7 +53,7 @@ export default class Stores {
     let st = this.dynamicDocStores.get(k)
     if (!st) {
       if (noforce) return undefined
-      const st = useDocStore(k)
+      st = useDocStore(k)
       this.dynamicDocStores.set(k, st)
     }
     return st
