@@ -816,6 +816,32 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
       })
     }
 
+    let nwatch = 1
+    const watchers: any = {}
+
+    const setPerimeterWatcher = (p: $Perimeter, action: Function) : string => {
+      const k = '' + nwatch++
+      watchers[k] = p.id
+      setTimeout(async () => {
+        while (watchers[k]) {
+          await waitNextSync(p)
+          const t = getLastSyncTime(p)
+          setTimeout(async () => {await action(k, p, t)}, 1)
+        }}, 1)
+      return k
+    }
+
+    const cancelPerimeterWatcher = (k: string) => {
+      const pid = watchers[k]
+      if (pid) {
+        const apstate = activePerims[pid]
+        if (apstate && apstate.resolves) for(const res of apstate.resolves)
+          res()
+        apstate.resolves = []
+      }
+      delete watchers[k]
+    }
+
     type HB = { dh: number, lc: number[], lost: number    }
     const hb = reactive({
       dh: 0, // dh de souscription
@@ -874,6 +900,7 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
       onNotif, storeDC, checkResolves,
       getDoc, getColl, getSColl, activePerimsIds, removeActiveP,
       fetch, waitNextSync, forcedResync, getLastSyncTime,
+      setPerimeterWatcher, cancelPerimeterWatcher,
       manageHbc
     } as IDocStore
   })()

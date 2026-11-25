@@ -127,7 +127,7 @@
 </template>
 
 <script setup lang="ts" vapor>
-import { ref, type Ref, computed, onMounted, watch, reactive } from 'vue'
+import { ref, type Ref, computed, onMounted, onUnmounted, watch, reactive } from 'vue'
 import stores from '../starter/allstores'
 import { $Credential } from '../src-fw/documents'
 import { $Perimeter } from '../src-fw/subscription'
@@ -165,19 +165,29 @@ const myPerims: Ref<$Perimeter[]> = ref([])
 const org = ref()
 const std: Ref<any> = computed(() => stores.getDocStore('AS2', org.value))
 const perimetre = ref()
+const pwatcher = ref('')
 const cred: Ref<$Credential | undefined> = ref()
 
-watch(perimetre, (p) => {
+const aut: Ref<AS2$Auteur> = computed(() => ui.appPage.aut)
+
+// Changement du CONTENU du périmètre courant
+// clé du watcher, périmètre, dh de changement
+const onPerimetreChg = (k: string, p: $Perimeter, at: number) => {
   ui.appPage.aut = p ? std.value.getDoc('Auteur', p.docPk) : null
   ui.appPage.articles = std.value.getSColl('Auteur', p.docPk)
+}
+
+onUnmounted(() => {
+  if (pwatcher.value)
+    std.value.cancelPerimeterWatcher(pwatcher.value)
 })
 
-const aut: Ref<AS2$Auteur> = computed(() => ui.appPage.aut)
-/*
-  perimetre.value ? std.value.getDoc('Auteur', perimetre.value.docPk) : null)
-watch(aut, (v) => {
-  console.log(v ? v.nomAuteur : 'personne') })
-*/
+// Un AUTRE périmètre est courant
+watch(perimetre, (after, before) => {
+  if (before && pwatcher.value) // before: ne pas détruire le watcher qiui vient d'être posé
+    std.value.cancelPerimeterWatcher(pwatcher.value)
+  onPerimetreChg('0', after, 0)
+})
 
 const coauts: Ref<EmbedCred[]> = computed(() => {
   const co: EmbedCred[] = []
@@ -216,14 +226,7 @@ const select = async (c: $Credential) => {
   cred.value = c
   org.value = c.org
   perimetre.value = session.getPerimeter('AS2', c.org, '', 'Auteur', c.docPk)
-
-  setTimeout(async () => {
-    while (perimetre.value) {
-      await std.value.waitNextSync(perimetre.value)
-      const t = std.value.getLastSyncTime(perimetre.value)
-      console.log(`Le périmètre Auteur ${perimetre.value.docPk} a changé à ${dhcool(t, true)}`)
-    }
-  }, 1)
+  pwatcher.value = std.value.setPerimeterWatcher(perimetre.value, onPerimetreChg)
   await std.value.fetch([perimetre.value], true)
 }
 
