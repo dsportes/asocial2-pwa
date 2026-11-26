@@ -6,7 +6,8 @@ import { appConfig } from '../app/config'
 import { Crypt } from '../src-fw/crypt'
 import { AppExc, type CodeLabel } from './base'
 import { sleep } from '../starter/util'
-import { $Perimeter, type $Perims, $Def } from '../src-fw/subscription'
+import { $Perimeter, $Def } from '../src-fw/subscription'
+import { type $Perims } from '../stores/session-store'
 
 /*
 La base IDB est propriété d'un couple application / utilisateue. Son nom est: app-userId

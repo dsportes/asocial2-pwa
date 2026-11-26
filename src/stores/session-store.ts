@@ -7,8 +7,13 @@ import { logexc } from '../src-fw/base'
 import { appConfig } from '../app/config'
 import { $t, starter } from '../starter/util'
 import { idb, IDB, type Prefs, deleteIDB, type StartPlane  } from '../src-fw/idb'
-import { $Def, $Perimeter, type $Perims, type $DefsXref, buildXref, $Subs } from '../src-fw/subscription'
+import { $Def, $Perimeter, $Subs } from '../src-fw/subscription'
 import { AOperation, checkStatus } from '../src-fw/operation'
+
+// Map par svc/org des périmètres identifiés par leur id
+export type $Perims = Map<string, Map<string, $Perimeter>>
+// Map par svc/org du set des périmètres dont chaque def fait partie
+export type $DefsXref = Map<string, Map<string, Set<string>>>
 
 export type EdPref = {
   code: string
@@ -77,19 +82,35 @@ export const useSessionStore = defineStore('session', () => {
 
   const perims: Ref<$Perims> = ref(new Map())
   const defsXref: Ref<$DefsXref> = ref(new Map())
+
+  const getXref = (svc: string, org: string, def: $Def) : Set<string> => {
+    const m = !defsXref.value ? null : defsXref.value.get(svc + '/' + org)
+    return !m ? new Set() :(m.get(def.definition) || new Set())
+  }
+
+  const buildXref = () => {
+    const m0: Map<string, Map<string, Set<string>>> = new Map()
+    for(const [so, m] of perims.value) {
+      for(const [pid, p] of m) {
+        for(const def of p.defs) {
+          const id = def.definition
+          let m1 : Map<string, Set<string>> | undefined = m0.get(so)
+          if (!m1) { m1 = new Map(); m0.set(so, m1)}
+          let s: Set<string> | undefined = m1.get(id)
+          if (!s) { s = new Set(); m1.set(id, s)}
+          s.add(pid)
+        }
+      }
+    }
+    defsXref.value = m0
+  }
+
   const getPerimeter =
     (svc: string, org: string, code: string, docCl: string, pk: string ) => {
     const m = !perims.value ? undefined : perims.value.get(svc + '/' + org)
     if (!m) return null
     const id = (code || '') + '/' + docCl + '/' + pk
     return m.get(id)
-  }
-  const setDefsXref = (xref: $DefsXref) => {
-    defsXref.value = xref
-  }
-  const getXref = (svc: string, org: string, def: $Def) : Set<string> => {
-    const m = !defsXref.value ? null : defsXref.value.get(svc + '/' + org)
-    return !m ? new Set() :(m.get(def.definition) || new Set())
   }
 
   const prefs: Ref<Prefs> = ref(new Map())
@@ -418,7 +439,7 @@ export const useSessionStore = defineStore('session', () => {
 
     step, setStep, dialogs,
     syncOK, syncKO, allOK, netStatus, noDoc,
-    perims, getPerimeter, chgOptions, onCredsOptionsChange, getXref, setDefsXref, credsChange,
+    perims, getPerimeter, chgOptions, onCredsOptionsChange, getXref, credsChange,
     orgRoles, orgRolesP,
     prefs, pref,
     edPref, setEdPref, resetEdPref, updatePrefs, currentPref,

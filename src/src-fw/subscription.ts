@@ -7,29 +7,6 @@ import { $Credential } from '../src-fw/documents'
 import { $ADocument, $Document } from '../src-fw/registry'
 import { logexc } from '../src-fw/base'
 
-// Map par svc/org des périmètres identifiés par leur id
-export type $Perims = Map<string, Map<string, $Perimeter>>
-// Map par svc/org du set des périmètres dont chaque def fait partie
-export type $DefsXref = Map<string, Map<string, Set<string>>>
-
-export const buildXref = () => {
-  const session = stores.session
-  const m0: Map<string, Map<string, Set<string>>> = new Map()
-  for(const [so, m] of session.perims) {
-    for(const [pid, p] of m) {
-      for(const def of p.defs) {
-        const id = def.definition
-        let m1 : Map<string, Set<string>> | undefined = m0.get(so)
-        if (!m1) { m1 = new Map(); m0.set(so, m1)}
-        let s: Set<string> | undefined = m1.get(id)
-        if (!s) { s = new Set(); m1.set(id, s)}
-        s.add(pid)
-      }
-    }
-  }
-  session.setDefsXref(m0)
-}
-
 /* versions d'une souscription: sur le serveur, détenue localement
 si versions[0] === versions[1] la souscription est à jour en session
 */
