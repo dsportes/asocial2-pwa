@@ -1,9 +1,5 @@
 /* Module de gestion de "dsStores" de stockage BRUT de $Document.
-UN "store" par couple (svc, org)
-Stockage par clazz / pk : quand une classe n'a pas de document elle n'apparaît pas.
-
-Voir: https://alexop.dev/tils/dynamic-pinia-dsStores/
-*/
+UN "store" par couple (svc, org) */
 
 import { type Ref, ref, reactive } from 'vue'
 import { defineStore } from 'pinia'
@@ -20,23 +16,31 @@ import { $Document, Registry } from '../src-fw/registry'
 import { logexc } from '../src-fw/base'
 import { idb } from '../src-fw/idb'
 
-// Si IDB a une lat plus ancienne il faut rafraîchir sa lat
+/* Pour un document en cache:
+- sat: service assert time: la version du document a été vérifiée / affirmée à "sat". 
+  La version elle-même peut être bien antérieure.
+- lat: local assert time. la version du document détenue en local à été vérifiée à "lat".
+Si un document a en IDB une lat plus ancienne de MAXLATDELAY, il faut la rafraîchir,
+le cas échéant par la même version si elle n'a pas changé mais dont on se sera assuré
+à une date ultérieure.
+*/
 const MAXLATDELAY = 3 * 3600 * 1000
 
+/* Message de notification */
 type MsgNotif = {
   svc: string
-  org: string // 'demo'
+  org: string 
   now: number // dh de l'opération ayant publié le message
-  hbc: string
-  title: string // 'myApp - demo',
-  body: string // 'Chat reçu',
-  url: string // 'http...'
-  defs: string // liste de def séparés par un espace
+  hbc: string // heart beat count de l'oération d'envoi
+  title: string // Titre apparaissant dans la notification du browser
+  body: string // Par exemple le contenu en base 64 d'un chat
+  url: string //  URL de l'application à ouvrir sur le terminal par un clic de l'opérateur
+  defs: string // liste de "def" séparés par un espace
 }
 
-/* Traitement des notifications reçues:
-- sur retour d'opération,
-- sur web-push,
+/* Hook de traitement des notifications reçues:
+- soit sur un retour d'opération,
+- soit par une notification poussée par web-push.
 */
 export async function onPushMsg (payload: string) {
   const messageNotif =  decode(keyFromB64(payload)) as MsgNotif
@@ -60,31 +64,105 @@ export async function onPushMsg (payload: string) {
   }
 }
 
-// Hook du register-sw pour transmettre les messages web-push
+/* Au chargement du module (premier import) celui-ci déclare au module 
+my-register-sw qu'il doit transmettre à "onPushMessage" les messages reçus par web-push.
+Ainsi my-regisqter-sw qui est un des deux modules primtifs (avec main.ts) N'A PAS
+de dépendance d'import avec docs.ts (ce qui aurait provoqué une boucle d'import).
+*/
 declareOnPushMessage(onPushMsg)
 
+/* Etat de suivi d'un périmètre en cache */
+type APState = {
+  status: number
+  /* 1: inscrit, pas encore abonné
+      2: actif, abonné
+      3: synchro demandée au moins une fois (l'état de synchronisation effective est donné par lastSync) */
+  lastSync: number // si non 0, dh de dernière synchronisation complète
+  perimeter: $Perimeter // Référence du prérimètre
+  /* liste des fonctions à invoquer (débloquant des listeners) à la synchronisation */
+  resolves: Function[] 
+}
+
+/* Interface externe d'usage d'un store de document.
+*/
 export type IDocStore = {
   readonly svc: string
   readonly org: string
-  getXref (def: $Def) : Set<string>
 
+  /* fetch rend ACTIF les périmètres de la liste lp qui ne l'étaient pas ...
+  FORCE 2: a) chargement initial en syncMode, b) reprise après PAUSE de synchro
+    - rend ACTIF les périmètres de la liste lp qui ne l'étaient pas
+    - refait les souscriptions
+    - demande une (re)synchrosition des périmètres de lp (MEME S'ILS L'ETAIENT DEJA)
+  FORCE 1: a) changement des périmètres en cours de session (édition de options)
+    - rend ACTIF les périmètres de la liste lp qui ne l'étaient pas
+    - refait les souscriptions, si certaines manquaient
+    - demande une synchronisation des périmètres de lp QUI NE L'ETAIENT PAS
+  FORCE 0: demandes au fil de l'eau de l'application
+    - rend ACTIF les périmètres de la liste lp qui ne l'étaient pas
+    - refait les souscriptions, si certaines manquaient
+    - demande une synchronisation des périmètres de lp QUI NE L'ETAIENT PAS
+  SI WAITING :
+    - ne retourne que quand tous les périmètres de la liste lp
+    auront eu au moins une synchronisation complète.
+    - si tous ont déjà eu une synchro complète, retourne maintenant.
+  */
   fetch (lp: $Perimeter[], waiting?: boolean, force?: number) : Promise<void>
+
+  /* Créé un "watcher" sur un périmètre qui invoquera l'action ASYNC citée
+  dès lors qu'un document du périmètre a changé (ou a été ajouté / retiré du périmètre).
+  Retourne un string ID du watcher qui servira à arrêterr le watcher.
+  */
+  setPerimeterWatcher (p: $Perimeter, action: Function) : string
+
+  /* Arrête le "watcher" d'ID donnée (retourné par un setPerimeterWatcher) */
+  cancelPerimeterWatcher (k: string) : void
+
+  /* QUASI- PRIVATE : bloque jusqu'à la prochaine évolution de documents d'un périmètre */
   waitNextSync (p: $Perimeter) : Promise<void>
+
+  /* Resynchronise le périmètre cité, ou sinon tous ceux actifs.
+  NORMALEMENT les notifications déclenchent les synchronisations nécessaires.
+  Cependant si par superstition, ou problèmes réseau cahotiques,
+  l'utilisateur veut resynchroniser des périmètres
+  par crainte d'avoir perdu des "notifications", il peut les forcer.
+  */
   forcedResync (p?: $Perimeter) : void
+
+  /* Retourne la dh à laquelle le périmètre a été synchronisé pour la dernière fois.
+  Le fait que cette dh soit ancienne ne signifie pas que le périmètre est désynchronisé mais
+  seulementqu'aucune notification n'est parvenue depuis cette dh pour signaler une évolution.*/
   getLastSyncTime (p: $Perimeter) : number
-  getApstate (pid: string) : APState
+
+  /* Inactiviation (suppression) d'un périmètre : pour la gestion de la session */
   removeActiveP (id: string) : void
 
+  /* Retourne l'item représentant l'état d'une "définition" dans le store */
   getItem (def: $Def, create?: boolean) : $DCItem
+
+  /* Retourne le document en cache identifié par son couple docCl / pk.
+  (Le store étant dédié à UN service, docCl n'a PAS de préfixe de service) */
   getDoc (cl: string, pk: string) : $Document
+
+  /* Retourne la liste des pk des documents de la collection définie par docCl / colName / pk. */
   getSColl (cl: string, colName: string, pk: string) : Set<string>
+
+  /* Retourne les pk des documents de la collection définie par docCl / pk. */
   getColl (cl: string, pk: string) : Set<string>
+
+  /* Retourne les ids des périmètres actifs détenus en cache */
   activePerimsIds () : Set<string>
 
-  onNotif (defs: $Def[], dh: number, hbc: string) : Promise<void>
-  storeDC (item: $DCItem, now: number, dcdata: $DCData) : Promise<void>
-  checkResolves () : void
+  /* Signalement de réception d'un "heart beat".
+  - sur le retour de n'importe quelle opération sauf 'FW$setSubscription', 'FW$Sync', 'FW$HeartBeat',
+    ayant un record heat beat => mode 4.
+  - sur le retour de 'FW$setSubscription' d'enregistrement de subscription: mode => 1
+  - sur retour de FW$HeartBeat: mode => 3
 
+  En interne:
+  - sur retour d'un FW$Sync: mode v => 2
+  - sur onNotif, réception d'une notification : mode => 5
+  */
   manageHbc (hbcMode: number, hbc: string) : void
 }
 
@@ -131,19 +209,6 @@ type Row = {
   // etc.
 }
 
-type APState = {
-  /*
-    1: inscrit, pas encore abonné
-    2: actif, abonné
-    3: synchro demandée au moins une fois
-    (l'état de synchronisation effective est donné par lastSync)
-  */
-  status: number
-  lastSync: number // si non 0, dh de dernière synchro complète
-  perimeter: $Perimeter
-  resolves: Function[]
-}
-
 interface $DCData {
   v: number
   incr?: boolean
@@ -174,7 +239,7 @@ export class SyncQueue {
     - ceux déjà en cours de sync.
     FORCE: resync même s'il a été posté, est revenu et qu'aucune notification
       ne l'a concerné (cad théoriquement à jour)
-    Leur statut devient 1
+    Leur statut devient:
       0: sync ni en queue, ni posté
       1: sync en queue,
       2: sync posté pas revenu,
@@ -194,6 +259,14 @@ export class SyncQueue {
     }, 1)
   }
 
+  /* Gère la liste des syncs en cours et la traite en FIFO:
+  - pour une collection, un appel dédié à la collection.
+  - pour des documents qui se suivent dans la queue (sans collection donc),
+    - un seul appel pour N documents,
+    - au maximum 10 documents.
+  Permet un certain groupement des appels mais évite les demandes très longues / volumineuses.
+  En cas d'échec d'une opération sync, remet les items en queue (sans les changer de place).
+  */
   static async doSyncs () {
     while (SyncQueue.qitems.length) {
       let x: any = SyncQueue.qitems[0]
@@ -233,7 +306,7 @@ export class SyncQueue {
           item.syncSt = 2
           SyncQueue.qitems.unshift({ svc, org, item})
         }
-        stores.session.syncOK = false
+        stores.session.syncKO()
         break
       }
     }
@@ -242,7 +315,7 @@ export class SyncQueue {
 }
 
 /* Les DocStore sont créés en début de session pour héberger les documents
-et collections de la session pour chauqe couple svc / org.
+et collections de la session pour chaque couple svc / org.
 Ils sont détruits en fin de session.
 */
 export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
@@ -264,10 +337,9 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
     */
     const colls = reactive({  } as any)
 
-    const getXref = (def: $Def) : Set<string> => {
-      return stores.session.getXref(svc, org, def)
-    }
-
+    /* Pour que la réactivité des docs / colls fonctionne il FAUT 
+    REDONNER UNE VALEUR à l'élément de docs / colls ET NON mettre à jour son item.
+    */
     const upd = (item: $DCItem) => {
       if (item.def.type === 1) {
         delete docs[item.def.definition]
@@ -278,6 +350,10 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
       }
     }
 
+    /* Retourne l'item (l'entrée de docs / colls) correspondant à la
+    "définition" def donnée.
+    Sur option create, le créé s'il n'existe pas (sinon retourne undefined).
+    */
     const getItem = (def: $Def, create?: boolean) => {
       let item = def.isColl ? colls[def.definition] : docs[def.definition]
       if (!item && create) {
@@ -287,15 +363,32 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
       return item
     }
 
+    /* Une entrée de type Apstate par ID de périmètre "actif" 
+    type APState = {
+      status: number
+        // 1: inscrit, pas encore abonné
+        // 2: actif, abonné
+        // 3: synchro demandée au moins une fois (l'état de synchronisation effective est donné par lastSync)
+      lastSync: number // si non 0, dh de dernière synchronisation complète
+      perimeter: $Perimeter // Référence du prérimètre
+        // liste des fonctions à invoquer (débloquant des listeners) à la synchronisation
+      resolves: Function[] 
+    } */ 
     const activePerims = reactive({  } as any)
+
+    /* Retourne le set des IDs des périmètres actifs */
     const activePerimsIds = () : Set<string> => {
       const s = new Set<string>()
       for(const x in activePerims) s.add(x)
       return s
     }
+
+    /* Déclare un périmètre inactif */
     const removeActiveP = (id: string) : void => {
       delete activePerims[id]
     }
+
+    /* Retourne l'état d'un périmètre "actif" ou undefined s'il ne l'est pas */
     const getApstate = (pid: string) : APState => {
       return activePerims[pid]
     }
@@ -318,7 +411,10 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
       return item ? item.pks : new Set()
     }
 
-    // Avis de mises à jour de documents / collections - A RESYNCHRONISER
+    /* Hook recevant les avis de mises à jour des définitionds de
+      documents / collections A RESYNCHRONISER.
+      Pour celles-ci les inscrit dans la Sync Queue.
+    */
     const onNotif = async (defs: $Def[], dh: number, hbc: string) => {
       if (hbc)
         manageHbc(5, hbc)
@@ -326,7 +422,7 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
       for(const def of defs) {
           const item = getItem(def)
           if (item) {
-            const pids = getXref(def)
+            const pids = stores.session.getXref(svc, org, def)
             let ok = false
             for (const pid of pids) {
               const apstate = activePerims[pid]
@@ -401,7 +497,7 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
       } catch (e: any) {
         logexc(e)
         return undefined
-        // TODO
+        // TODO - Comment gérer le BUG d'un document reçu NON compilable.
       }
     }
 
@@ -436,6 +532,8 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
       }
     }
 
+    /* SEMI-PRIVATE : Au retour d'une synchronisation de document / collection,
+    rangement en cache de ceux-ci. */
     const storeDC = async (item: $DCItem, now: number, dcdata: $DCData) => {
       if (item.def.type === 1) await storeDoc(item as $DocItem, now, dcdata as $DocData)
       else await storeColl(item as $CollItem, now, dcdata as $CollData)
@@ -660,7 +758,7 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
         const aps = activePerims[p.id]
         if (aps.status < 2) aps.status = 2
       } else {
-        stores.session.syncOK = false
+        stores.session.syncKO()
         console.log('subscription failed !')
       }
     }
@@ -671,23 +769,14 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
       return false
     }
 
-    /* fetch rend ACTIF les périmètres de la liste lp qui ne l'étaient pas ...
-    FORCE 2: a) chargement initial en syncMode, b) reprise après PAUSE de synchro
-      - rend ACTIF les périmètres de la liste lp qui ne l'étaient pas
-      - refait les souscriptions
-      - demande une (re)synchrosition des périmètres de lp (MEME S'ILS L'ETAIENT DEJA)
-    FORCE 1: a) changement des périmètres en cours de session (édition de options)
-      - rend ACTIF les périmètres de la liste lp qui ne l'étaient pas
-      - refait les souscriptions, si certaines manquaient
-      - demande une synchronisation des périmètres de lp QUI NE L'ETAIENT PAS
-    FORCE 0: demandes au fil de l'eau de l'application
-      - rend ACTIF les périmètres de la liste lp qui ne l'étaient pas
-      - refait les souscriptions, si certaines manquaient
-      - demande une synchronisation des périmètres de lp QUI NE L'ETAIENT PAS
-    SI WAITING :
-      - ne retourne que quand tous les périmètres de la liste lp
-      auront eu au moins une synchronisation complète.
-      - si tous ont déjà eu une synchro complète, retourne maintenant.
+    /* fetch rend ACTIF les périmètres de la liste lp qui ne l'étaient pas.
+      Ils sont inscrits / connus en cache mais pas forcément encore présents / synchronisés.
+      Ils sont chargés, si possible, de IDB, la synchro pouvant ou non être demandée
+      (puisque certains périmètres pouvaient déjà être actifs).
+      SI WAITING :
+        - ne retourne que quand TOUS les périmètres de la liste lp
+        auront eu au moins une synchronisation complète.
+        - si TOUS ont déjà eu une synchro complète, retourne maintenant.
     */
     const fetch = async (lp: $Perimeter[], waiting?: boolean, _force?: number) : Promise<void> => {
       const force = _force || 0
@@ -739,13 +828,6 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
       }
     }
 
-    /* Resynchronise un périmètre cité, ou sinon tous ceux actifs
-    NORMALEMENT les notifications déclenchent les synchronisations nécessaires.
-    Cependant si par superstition, ou problèmes réseau cahotiques,
-    l'utilisateur veut resynchroniser des périmètres
-    par crainte d'avoir perdu des "notifications",
-    il peut les forcer.
-    */
     const forcedResync = (p?: $Perimeter) : void => {
       const lp1: $Perimeter[] = [] // périmètres à souscrire
       if (p && activePerims[p.id]) lp1.push(p)
@@ -803,8 +885,7 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
     }
 
     /* Attente sur un périmètre:
-    - reviendra la prochaine fois qu'un périmètre aura été synchronisé
-      (en totalité)
+    - reviendra la prochaine fois qu'un périmètre aura été synchronisé (en totalité)
     - retourne la lastSync du périmètre
     */
     const waitNextSync = async (p: $Perimeter) : Promise<void> => {
@@ -817,6 +898,7 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
     }
 
     let nwatch = 1
+    /* Table des "watchers" déclarés par la session et "en veille". */
     const watchers: any = {}
 
     const setPerimeterWatcher = (p: $Perimeter, action: Function) : string => {
@@ -830,7 +912,7 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
         }}, 1)
       return k
     }
-
+  
     const cancelPerimeterWatcher = (k: string) => {
       const pid = watchers[k]
       if (pid) {
@@ -849,7 +931,11 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
       lost: 0 // dh de constat d'un trou (lc.length > 1)
     } as HB)
 
-    /*
+    /* Prise en compte d'un heart beat identifié par hbc.
+    - dh (en string)
+    - c : code complémentaire
+    Détermine si une rupture de synchronisation est probable et dans ce 
+    cas met session.syncOk à false.
     hbcMode
       1: souscription
       2: synchronisation
@@ -890,15 +976,17 @@ export const useDocStore = (id: string) => defineStore(`store-${id}`, () => {
       console.log('HBC leaks: ' + d + 'ms dh:' + hb.dh + ' seq:' + hb.lc.join(','))
       if (d > 5000) {
         // trouée depuis plus de 5 secondes
-        stores.session.syncOK = false
+        stores.session.syncKO()
       }
     }
 
     return {
-      svc, org, getXref, getApstate, subsOK,
+      storeDC, onNotif, checkResolves, // SEMI-PRIVATE
+
+      svc, org, getApstate,
       getItem,
-      onNotif, storeDC, checkResolves,
-      getDoc, getColl, getSColl, activePerimsIds, removeActiveP,
+      getDoc, getColl, getSColl, 
+      activePerimsIds, removeActiveP,
       fetch, waitNextSync, forcedResync, getLastSyncTime,
       setPerimeterWatcher, cancelPerimeterWatcher,
       manageHbc

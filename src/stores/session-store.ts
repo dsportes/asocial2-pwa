@@ -36,6 +36,11 @@ export const useSessionStore = defineStore('session', () => {
   const okOptions = ref(1)
   const haschgOptions = ref(false)
   const syncOK = ref(true)
+  // Le cache de documents et la session peuvent décrtèter que la session est DESYNCHRONISEE
+  // Seule la session peut la redéclarer synchronisée.
+  const syncKO = () => {
+    syncOK.value = false
+  }
   const allOK = ref(true)
   const netStatus = ref(null)
 
@@ -412,7 +417,7 @@ export const useSessionStore = defineStore('session', () => {
     resetdb, hasLocal, planeMode, syncMode, incMode, loginMode, sessionId,
 
     step, setStep, dialogs,
-    syncOK, allOK, netStatus, noDoc,
+    syncOK, syncKO, allOK, netStatus, noDoc,
     perims, getPerimeter, chgOptions, onCredsOptionsChange, getXref, setDefsXref, credsChange,
     orgRoles, orgRolesP,
     prefs, pref,

@@ -355,9 +355,13 @@ export class OperationG extends AOperation {
       if (response.status === 200) {
         session.opEnd()
         const hbc = obj['hbc']
-        if (hbc && !OperationG.specialOps.has(this.args.opName)) {
+        if (hbc) {
           const st = stores.getDocStore(this.args.svc, this.args.org, true)
-          if (st) st.manageHbc(4, hbc)
+          if (st) {
+            let mode = !OperationG.specialOps.has(this.args.opName) ? 4
+              : (this.args.opName === 'FW$HeartBeat' ? 3 : 0)
+            if (mode) st.manageHbc(mode, hbc)
+          }
         }
         const ntf = obj['notification']
         if (ntf) {
